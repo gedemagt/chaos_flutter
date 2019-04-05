@@ -11,7 +11,7 @@ import 'package:photo_view/photo_view.dart';
 
 class ImageViewer extends StatefulWidget {
 
-  Rute _rute;
+  final Rute _rute;
 
   ImageViewer(this._rute);
 

@@ -6,7 +6,7 @@ import 'package:timer/util.dart';
 // this is good practice
 class GradePickerDialog extends StatefulWidget {
   /// initial selection for the slider
-  int grade;
+  final int grade;
 
   GradePickerDialog({Key key, this.grade}) : super(key: key);
 
@@ -16,13 +16,13 @@ class GradePickerDialog extends StatefulWidget {
 
 class _GradePickerDialogState extends State<GradePickerDialog> {
   /// current selection of the slider
-//  double _grade;
+  int _grade;
 
-//  @override
-//  void initState() {
-//    super.initState();
-//    _grade = widget.grade.toDouble();
-//  }
+  @override
+  void initState() {
+    super.initState();
+    _grade = widget.grade;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,18 +31,18 @@ class _GradePickerDialogState extends State<GradePickerDialog> {
       content: Column (
         children: [
           Slider(
-            value: widget.grade.toDouble(),
+            value: _grade.toDouble(),
             min: 0,
             max: 20,
             divisions: 20,
             onChanged: (value) {
               setState(() {
-                widget.grade = value.round();
+                _grade = value.round();
               });
             },
           ),
           Text(
-            numberToGrade(widget.grade)
+            numberToGrade(_grade)
           )
         ]
       ),
@@ -51,7 +51,7 @@ class _GradePickerDialogState extends State<GradePickerDialog> {
           onPressed: () {
             // Use the second argument of Navigator.pop(...) to pass
             // back a result to the page that opened the dialog
-            Navigator.pop(context, widget.grade);
+            Navigator.pop(context, _grade);
           },
           child: Text('OK'),
         )

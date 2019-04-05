@@ -13,13 +13,13 @@ class LocalRuteProvider extends Provider<Rute> {
   }
 
   @override
-  Future<void> add(Rute t) {
+  Future<void> add(Rute t) async {
     _addOrSave(t);
     fireListeners();
   }
 
   @override
-  Future<void> refresh() {
+  Future<void> refresh() async {
     _cache.clear();
     var k = _storage.getItem("rutes");
     if(k is List) {
@@ -51,7 +51,7 @@ class LocalRuteProvider extends Provider<Rute> {
   }
 
   @override
-  Future<void> delete(Rute t) {
+  Future<void> delete(Rute t) async {
     var k = _storage.getItem("rutes");
     if(k is List) {
       for(int i=0; i<k.length; i++) {
@@ -65,11 +65,10 @@ class LocalRuteProvider extends Provider<Rute> {
     _storage.setItem("rutes", k);
     _cache.remove(t.uuid);
     fireListeners();
-
   }
 
   @override
-  Future<void> save(Rute t) {
+  Future<void> save(Rute t) async {
     _addOrSave(t);
     fireListeners();
   }

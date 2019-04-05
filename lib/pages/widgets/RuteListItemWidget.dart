@@ -7,7 +7,7 @@ import 'package:timer/util.dart';
 
 class RuteListItemWidget extends StatelessWidget {
 
-  Rute _rute;
+  final Rute _rute;
 
   RuteListItemWidget(this._rute);
 

@@ -14,7 +14,8 @@ class RuteCreator extends StatefulWidget {
   /// initial selection for the slider
 
   ///
-  Provider<Rute> _prov;
+  final Provider<Rute> _prov;
+
   RuteCreator(this._prov);
 
   @override

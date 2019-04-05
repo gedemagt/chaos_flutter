@@ -37,6 +37,7 @@ class Rute {
   get gym => _gym;
   get sector => _sector;
   get date => _created;
+  get edit => _edit;
   get imageUUID => _imageUUID;
 
   set grade(val) {
@@ -147,6 +148,6 @@ class Rute {
 
 
   bool operator == (o) => o is Rute && o.uuid == uuid;
-
+  int get hashCode => uuid.hashCode;
 
 }

@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:async';
-import 'dart:math';
 
 import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
@@ -72,5 +70,6 @@ class User {
 
 
   bool operator == (o) => o is User && o.uuid == uuid;
+  int get hashCode => uuid.hashCode;
 
 }

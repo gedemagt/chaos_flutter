@@ -12,7 +12,7 @@ class RuteViewer extends StatelessWidget {
 
   RuteViewer(this._r);
 
-  List<Comment> comments = [
+  final List<Comment> comments = [
     Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",    "BallClamps",
     DateTime.now()
   ),
@@ -107,10 +107,10 @@ class RuteViewer extends StatelessWidget {
 
 class CommentWidget extends StatelessWidget {
 
-  String _comment;
-  String _author;
-  DateTime _dateTime;
-  DateFormat _format = DateFormat.yMMMd();
+  final String _comment;
+  final String _author;
+  final DateTime _dateTime;
+  final DateFormat _format = DateFormat.yMMMd();
 
   CommentWidget(this._comment, this._author, this._dateTime);
 

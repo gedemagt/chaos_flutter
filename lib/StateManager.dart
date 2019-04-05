@@ -11,7 +11,7 @@ class StateManager {
     return _singleton;
   }
 
-  StateManager._internal() {}
+  StateManager._internal();
 
   Gym _gym = Gym.unknown;
   User _loggedInUser = User.unknown;

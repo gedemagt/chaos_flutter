@@ -47,7 +47,7 @@ class Gym {
   }
 
   static Gym fromName(String name) {
-    Gym result = null;
+    Gym result;
     _cache.forEach((key, value) {if(value.name == name) result = value;});
 
     return result;
@@ -82,7 +82,7 @@ class Gym {
       }
     }
     _created = parse(map["date"]);
-    map.containsKey("edit") ? _edit = parse(map["edit"]) : _created;
+    _edit = map.containsKey("edit") ? _edit = parse(map["edit"]) : _created;
     _nrRutes = map["n_rutes"];
   }
 
@@ -121,4 +121,5 @@ class Gym {
 
 
   bool operator == (o) => o is Gym && o.uuid == uuid;
+  int get hashCode => uuid.hashCode;
 }

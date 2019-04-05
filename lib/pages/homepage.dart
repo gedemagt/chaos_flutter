@@ -4,14 +4,12 @@ import 'package:timer/models/filter.dart';
 import 'package:timer/pages/filterpage.dart';
 import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/loginpage.dart';
-import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/RuteListItemWidget.dart';
 import 'package:timer/providers/provider.dart';
 import 'package:timer/providers/webprovider.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/rutecreator.dart';
 import 'package:timer/models/user.dart';
-import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/creategympage.dart';
 
