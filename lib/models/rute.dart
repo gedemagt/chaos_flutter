@@ -96,7 +96,7 @@ class Rute {
       "sector": _sector,
       "tag": _tag,
       "author": _author.uuid,
-      "_grade": _grade
+      "grade": _grade
     };
   }
 
@@ -118,7 +118,7 @@ class Rute {
       _grade = 0;
     }
     _created = map.containsKey("date") ? DateTime.parse(map["date"]) : DateTime(1970);
-    _edit = map.containsKey("date") ? DateTime.parse(map["edit"]) : DateTime(1970);
+    _edit = map.containsKey("edit") ? DateTime.parse(map["edit"]) : _created;
 
     String coordinates = map["coordinates"];
     // Hacky, yes

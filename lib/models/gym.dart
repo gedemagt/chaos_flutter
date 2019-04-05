@@ -60,7 +60,6 @@ class Gym {
   }
 
   Gym.fromJson(Map map) {
-    print(map);
     _uuid = map["uuid"];
     _name = map["name"];
     _admin = User.fromUUID(map["admin"]);

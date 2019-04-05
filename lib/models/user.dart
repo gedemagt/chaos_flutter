@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 
-import 'package:intl/intl.dart';
 import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 
