@@ -40,7 +40,7 @@ class User {
     return _cache[uuid];
   }
 
-  Role getRole(String s) {print(s);
+  Role getRole(String s) {
     if(s.contains("ADMIN")) return Role.ADMIN;
     return Role.USER;
   }

@@ -22,7 +22,11 @@ class NothingToShowWidget extends StatelessWidget {
                 fontSize: 30
             ),
           ),
-          Image.asset("assets/images.jpeg")
+          Container(
+            child: Image.asset("assets/Duck-icon.png"),
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+          )
+
         ],
       ),
     ));

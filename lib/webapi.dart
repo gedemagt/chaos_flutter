@@ -80,7 +80,6 @@ class WebAPI {
       User u = User.fromJson(val);
       users.add(u);
     });
-    print("Updated users");
     return users;
 
   }
@@ -93,7 +92,6 @@ class WebAPI {
       Gym g = Gym.fromJson(val);
       gyms.add(g);
     });
-    print("Updated gyms");
     return gyms;
   }
 
@@ -132,27 +130,21 @@ class WebAPI {
 
   static Future<List<Rute>> downloadRutes(Gym gym) async {
     List<Rute> rutes = List<Rute>();
-    try {
-      var result = await _get("get_rutes",
-          headers: {"gym": gym.uuid});
-      Map j = json.decode(result.body);
-      j.forEach((key, val) {
-        if (!(val is Map)) {
-        //print("Could not parse $val");
-        }
-        else if(val["status"] == 1) {
-          //print("Skipping deleted rute");
-        }
-        else{
-          rutes.add(Rute.fromJson(val, WebRuteProvider()));
-        }
+    var result = await _get("get_rutes",
+        headers: {"gym": gym.uuid});
+    Map j = json.decode(result.body);
+    j.forEach((key, val) {
+      if (!(val is Map)) {
+      //print("Could not parse $val");
+      }
+      else if(val["status"] == 1) {
+        //print("Skipping deleted rute");
+      }
+      else{
+        rutes.add(Rute.fromJson(val, WebRuteProvider()));
+      }
 
-      });
-      print("Updated rutes");
-    } catch(e) {
-      print("Error loading rutes");
-      print(e.toString());
-    }
+    });
     return rutes;
   }
 
@@ -173,17 +165,17 @@ class WebAPI {
     else return uuid;
   }
 
-  static Future<String> createRute(Rute t) async {
+  static Future<String> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {
     DateTime now = DateTime.now();
     Response r = await _postJson("add_rute",
       body: {
-        "uuid": t.uuid,
-        "name": t.name,
-        "image": t.imageUUID,
-        "author": t.author.uuid,
-        "sector": t.sector,
-        "gym": t.gym.uuid,
-        "grade": t.grade,
+        "uuid": uuid,
+        "name": name,
+        "image": imageUUID,
+        "author": author.uuid,
+        "sector": sector,
+        "gym": g.uuid,
+        "grade": grade,
         "tag": "",
         "date": format(now),
         "edit": format(now)
@@ -192,7 +184,7 @@ class WebAPI {
 
     if(r.statusCode > 200)
       return Future.error(r.statusCode);
-    else return t.uuid;
+    else return uuid;
   }
 
   static Future<int> saveRute(Rute t) async {

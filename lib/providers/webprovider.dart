@@ -2,6 +2,7 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/providers/imageprovider.dart';
 import 'package:timer/providers/provider.dart';
 import 'package:timer/models/rute.dart';
+import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 
 class WebRuteProvider extends Provider<Rute> {
@@ -23,7 +24,7 @@ class WebRuteProvider extends Provider<Rute> {
       throw Exception("File too big");
     }
     Rute rute = Rute.create(name, sector, imageUUID, this);
-    await WebAPI.createRute(rute);
+    await WebAPI.createRute(getUUID("rute"), name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
 
     _cache[rute.uuid] = rute;
     fireListeners();

@@ -3,6 +3,7 @@ import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:timer/providers/database.dart';
+import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 
 class WebDatabase extends Database {
@@ -15,8 +16,20 @@ class WebDatabase extends Database {
   }
 
   @override
-  Future<Rute> createRute(Rute newRute) async {
-    String uuid = await WebAPI.createRute(newRute);
+  Future<Rute> createRute(String name, String sector, String imageUUID) async {
+    int r = await WebAPI.uploadImage(imageUUID);
+    if(r == 413) {
+      print("Problems!");
+      throw Exception("File too big");
+    }
+    if(r >= 500) {
+      throw Exception("Server error: $r");
+    }
+    if(r >= 400) {
+      throw Exception("Authentication error: $r");
+    }
+
+    String uuid = await WebAPI.createRute(getUUID("rute"), name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
     await refreshRutes();
     return getRute(uuid);
   }
@@ -74,10 +87,15 @@ class WebDatabase extends Database {
 
   @override
   Future<void> refreshRutes() async {
-    List<Rute> rutes = await WebAPI.downloadRutes(StateManager().gym);
-    ruteCache.clear();
-    rutes.forEach((r) => ruteCache[r.uuid] = r);
-    ruteStream.sink.add(getRutes());
+    try {
+      List<Rute> rutes = await WebAPI.downloadRutes(StateManager().gym);
+      ruteCache.clear();
+      rutes.forEach((r) => ruteCache[r.uuid] = r);
+      ruteStream.sink.add(getRutes());
+    } catch(o) {
+      ruteStream.sink.addError(o);
+    }
+
   }
 
   @override

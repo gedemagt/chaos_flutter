@@ -13,7 +13,7 @@ abstract class Database {
   Future<void> deleteRute(Rute rute);
   Future<Rute> saveRute(Rute rute);
   Future<Rute> getRute(String uuid);
-  Future<Rute> createRute(Rute newRute);
+  Future<Rute> createRute(String name, String sector, String imageUUID);
 
   Future<void> deleteGym(Gym gym);
   Future<Gym> saveGym(Gym gym);

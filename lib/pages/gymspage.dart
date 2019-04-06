@@ -3,6 +3,8 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
+import 'package:timer/providers/database.dart';
+import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/creategympage.dart';
 
@@ -23,6 +25,8 @@ class _GymsPageState extends State<GymsPage> {
   List<Gym> _gyms = new List<Gym>();
   List<Gym> _searchGyms = List<Gym>();
   TextEditingController _searchCtrl = TextEditingController();
+
+  Database prov = WebDatabase();
 
   GlobalKey _scaffoldKey = GlobalKey();
 

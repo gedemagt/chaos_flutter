@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/pages/imageviewer.dart';
-import 'package:timer/providers/provider.dart';
-import 'package:timer/models/rute.dart';
+import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
@@ -14,7 +13,7 @@ class RuteCreator extends StatefulWidget {
   /// initial selection for the slider
 
   ///
-  final Provider<Rute> _prov;
+  final Database _prov;
 
   RuteCreator(this._prov);
 
@@ -75,13 +74,15 @@ class _RuteCreatorState extends State<RuteCreator> {
             onPressed: () async {
               if (_formKey.currentState.validate()){
                 String imageUUID = await handleImage();
-                widget._prov.add(_nameCtrl.text, _sector, imageUUID).then((r) {
+                widget._prov.createRute(_nameCtrl.text, _sector, imageUUID).then((r) {
                   print("Success!");
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
                 },
                 onError: (e) {
-                  _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("An error occurred..!")));
-                  print(e);
+                  String errorText = "An error occured!";
+                  if(e is SocketException) errorText = "No internet connection";
+                  else errorText = e.toString();
+                  _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(errorText)));
                 });
               }
             },

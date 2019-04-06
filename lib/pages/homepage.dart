@@ -1,19 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/filter.dart';
 import 'package:timer/pages/filterpage.dart';
-import 'package:timer/pages/gymspage.dart';
-import 'package:timer/pages/loginpage.dart';
+import 'package:timer/pages/widgets/ChaosDrawer.dart';
 import 'package:timer/pages/widgets/RuteListItemWidget.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
-import 'package:timer/providers/provider.dart';
-import 'package:timer/providers/webprovider.dart';
+import 'package:timer/providers/database.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/rutecreator.dart';
-import 'package:timer/models/user.dart';
-import 'package:timer/util.dart';
-import 'package:timer/webapi.dart';
-import 'package:timer/pages/creategympage.dart';
+import 'package:timer/providers/webdatabase.dart';
 
 class RuteListPage extends StatefulWidget {
   RuteListPage({Key key, this.title}) : super(key: key);
@@ -28,201 +25,117 @@ class RuteListPage extends StatefulWidget {
 
 class _RuteListPageState extends State<RuteListPage> {
 
-  List<Rute> _rutes = new List<Rute>();
-  List<Rute> _filteredRutes = new List<Rute>();
-  Provider<Rute> prov = WebRuteProvider();
+  List<Rute> _rutes;
+  List<Rute> _filteredRutes;
+  Database prov = WebDatabase();
 
   Filter _filter = Filter();
 
-  bool _showError = false;
-  bool _showWaiting = false;
-
-  Future<void> doRefresh({bool show=false}) async {
-
-      if(_rutes.length==0 && show)
-        setState(() {
-        _showWaiting = true;
-        });
-
-    //await prov.refresh();
-    User.refreshUsers().then(
-      (s) => prov.refresh()
-    ).then(
-      (s) {
-        setState(() {
-        _showError=false;
-        });
-      }
-    ).catchError((s) {
-      setState(() {
-      _showError=true;
-      });
-    });
-  }
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   void initState() {
-    super.initState();
-    prov.init();
-    prov.stream.stream.listen((newRutes){
+
+    prov.ruteStream.stream.listen((data) {
       setState(() {
-        _showWaiting = false;
-        _rutes = newRutes;
+        _rutes = data;
         _filteredRutes = _filter.filter(_rutes);
       });
+    }, onError: (o, stacktrace) {
+      if(o is SocketException) {
+        _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Internet connection error...")));
+      }
+      else {
+        throw o;
+      }
     });
-    doRefresh(show: true);
+
+    prov.refreshUsers().then((s) => prov.refreshRutes());
+    super.initState();
   }
 
 
   @override
   Widget build(BuildContext context) {
 
-    List<Widget> ruteWidgets = List<Widget>();
-
-    _filteredRutes.forEach((rute) {
-      ruteWidgets.add(RuteListItemWidget(rute));
-    });
-
-    Widget switchRutes;
-    if(_filter.author == StateManager().loggedInUser) {
-      switchRutes = ListTile(
-        title: Text("All rutes"),
-        leading: Icon(Icons.people),
-        onTap: () {
-          setState(() {
-            _filter = Filter();
-            _filteredRutes = _filter.filter(_rutes);
-          });
-          Navigator.of(context).pop();
-        },
+    Widget body;
+    if(_filteredRutes != null && _filteredRutes.length ==0 ) {
+      body =  RefreshIndicator(
+          onRefresh: prov.refreshRutes,
+          child: ListView(
+            children: <Widget>[
+              NothingToShowWidget(text: "Nothing to see here...")
+            ],
+          )
+      );
+    }
+    else if(_filteredRutes != null && _filteredRutes.length > 0 ) {
+      body = RefreshIndicator(
+        onRefresh: prov.refreshRutes,
+        child: ListView.builder(
+          itemCount: _filteredRutes.length,
+          itemBuilder: (context, idx) {
+            return RuteListItemWidget(_filteredRutes[idx]);
+        })
       );
     }
     else {
-      switchRutes = ListTile(
-        title: Text("My rutes"),
-        leading: Icon(Icons.person_outline),
-        onTap: () {
-          setState(() {
-            _filter = Filter(author: StateManager().loggedInUser);
-            _filteredRutes = _filter.filter(_rutes);
-          });
-          Navigator.of(context).pop();
-        },
-      );
+      body = SizedBox.expand(child: Center(child: CircularProgressIndicator()));
     }
-
-
-
-    return Material(child:Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(StateManager().gym.name), //StateManager().gym.name
-        centerTitle: true,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.sort),
-            onPressed: () async {
-              Filter result = await Navigator.push(
+    return Material(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(StateManager().gym.name),
+          centerTitle: true,
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.sort),
+              onPressed: () async {
+                Filter result = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => FilterPage(_filter))
-              );
-              if(result != null) {
-                setState(() {
-                  _filter = result;
-                  _filteredRutes = _filter.filter(_rutes);
-                });
-              }
-            },
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RuteCreator(prov))
-        );
-      }),
-      body:
-      RefreshIndicator(
-        onRefresh: () => doRefresh(show: false),
-        child:  _showWaiting ? SizedBox.expand(child: Center(child:CircularProgressIndicator())) :  ListView(
-          children: _rutes.length == 0 ? [
-            NothingToShowWidget(text:"Nothing to show")
-          ] : ruteWidgets
-        )
-      ),
-      bottomSheet: !_showError ? null : Container(
-        color: Colors.black54,
-        child: new Wrap(
-          children: <Widget>[
-            ListTile(
-              title: Container(
-                child: Text(
-                  "Internet problems...",
-                  style: TextStyle(
-                    color: Colors.white
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            Container(
-              color: Theme.of(context).primaryColor,
-                child: ListTile(
-                  title: Text(StateManager().loggedInUser.name,
-                  style: Theme.of(context).primaryTextTheme.title),
-                  leading: Icon(Icons.account_circle, size: 50,),
-                  subtitle: Text("<email>",
-                  style: Theme.of(context).primaryTextTheme.caption)
-              )
-            ),
-            switchRutes,
-            Divider(),
-            ListTile(
-              title: Text(StateManager().gym.name),
-              leading: Icon(Icons.home),
-              trailing: canEdit(StateManager().gym.admin) ?
-                IconButton(
-                  icon: Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CreateGymPage(gym: StateManager().gym))
-                    );
-                  },
-                ) : null,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GymsPage())
                 );
+                if (result != null) {
+                  setState(() {
+                    _filter = result;
+                    _filteredRutes = _filter.filter(_rutes);
+                  });
+                }
               },
-            ),
-            Divider(),
-            ListTile(
-              title: Text("Logout"),
-              leading: Icon(Icons.navigate_before),
-              onTap: () {
-                WebAPI.logout().then((s) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
-                });
-              },
-            ),
+            )
           ],
         ),
-      ),
-    )
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RuteCreator(prov))
+            );
+          }),
+          body: body,
+          drawer: ChaosDrawer(),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _filter.author == StateManager().loggedInUser ? 1 : 0,
+            onTap: (idx) {
+              setState(() {
+                _filter = Filter(author: idx==0? null : StateManager().loggedInUser, minGrade: _filter.minGrade, maxGrade: _filter.maxGrade, sector: _filter.sector, orderBy: _filter.orderBy, ascending: _filter.ascending);
+                _filteredRutes = _filter.filter(_rutes);
+              });
+            },
+            items: [
+              BottomNavigationBarItem(
+                title: Text("Community"),
+                icon: Icon(Icons.people)
+              ),
+              BottomNavigationBarItem(
+                title: Text("Mine"),
+                icon: Icon(Icons.person)
+              )
+            ],
+          )
+        )
     );
   }
 }
