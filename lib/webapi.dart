@@ -20,8 +20,8 @@ import 'package:timer/util.dart';
 
 class WebAPI {
 
-  //static final String HOST = "195.201.200.125/chaos";
-  static final String HOST = "10.0.2.2:5000";
+  //static const String HOST = "195.201.200.125/chaos";
+  static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
 

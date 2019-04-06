@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:timer/models/comment.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:intl/intl.dart';
 
 
