@@ -16,12 +16,18 @@ class WebRuteProvider extends Provider<Rute> {
   }
 
   @override
-  Future<void> add(Rute t) async {
-    WebAPI.createRute(t).then((v) {
-      WebAPI.uploadImage(t.imageUUID);
-      _cache[t.uuid] = t;
-      fireListeners();
-    });
+  Future<Rute> add(String name, String sector, String imageUUID) async {
+    int r = await WebAPI.uploadImage(imageUUID);
+    if(r == 413) {
+      print("Problems!");
+      throw Exception("File too big");
+    }
+    Rute rute = Rute.create(name, sector, imageUUID, this);
+    await WebAPI.createRute(rute);
+
+    _cache[rute.uuid] = rute;
+    fireListeners();
+    return rute;
   }
 
   @override

@@ -30,6 +30,7 @@ class _RuteCreatorState extends State<RuteCreator> {
   final TextEditingController _nameCtrl = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future getImageCamera() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -50,7 +51,6 @@ class _RuteCreatorState extends State<RuteCreator> {
   Future<String> handleImage() async {
 
     final d = await getApplicationDocumentsDirectory();
-    print(d.path);
 
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
@@ -66,6 +66,7 @@ class _RuteCreatorState extends State<RuteCreator> {
     if(StateManager().gym != null) items.addAll(StateManager().gym.sectors);
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("New rute"),
         actions: <Widget>[
@@ -73,13 +74,15 @@ class _RuteCreatorState extends State<RuteCreator> {
             icon: Icon(Icons.check),
             onPressed: () async {
               if (_formKey.currentState.validate()){
-                try {
-                  String imageUUID = await handleImage();
-                  Rute r = Rute.create(_nameCtrl.text, _sector, imageUUID, widget._prov);
+                String imageUUID = await handleImage();
+                widget._prov.add(_nameCtrl.text, _sector, imageUUID).then((r) {
+                  print("Success!");
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
-                } catch(e) {
-                  print(e.toString());
-                }
+                },
+                onError: (e) {
+                  _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("An error occurred..!")));
+                  print(e);
+                });
               }
             },
           )
@@ -89,6 +92,7 @@ class _RuteCreatorState extends State<RuteCreator> {
         Form(
           key: _formKey,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
                 padding: EdgeInsets.all(20),
@@ -124,8 +128,8 @@ class _RuteCreatorState extends State<RuteCreator> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text("Sector:",
-                              style: TextStyle(fontWeight: FontWeight.bold)
+                            Text("Sector:  ",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)
                             ),
                             DropdownButton<String>(
                               value: _sector,
@@ -144,8 +148,8 @@ class _RuteCreatorState extends State<RuteCreator> {
                   ]
                 )
               ),
-              Container(
-                child: _image == null ? null : Image.file(_image),
+              Expanded( child:
+                _image == null ? Container() : Image.file(_image),
               )
             ],
           )

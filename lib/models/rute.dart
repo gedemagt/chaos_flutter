@@ -61,8 +61,6 @@ class Rute {
     _name = name;
     _sector = sector;
     _tag = "";
-
-    provider.add(this);
   }
 
 

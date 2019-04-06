@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:intl/intl.dart';
+import 'dart:convert' as conv;
 
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
@@ -20,6 +20,9 @@ import 'package:timer/util.dart';
 
 class WebAPI {
 
+  //static final String HOST = "195.201.200.125/chaos";
+  static final String HOST = "10.0.2.2:5000";
+
   static String _cookie = "";
 
   static bool hasBeenLoggedIn() {
@@ -35,8 +38,8 @@ class WebAPI {
 
   static Future<User> login(String username, String password) async {
     User result;
-    Response r = await http.post(Uri.http("10.0.2.2:5000", "/login"),
-        body:json.encode({"username": username, "password": password}), headers: {"content-type": 'application/json'}
+    Response r = await _postJson("login",
+        body: {"username": username, "password": password}
     );
 
     String rawCookie = r.headers['set-cookie'];
@@ -59,7 +62,7 @@ class WebAPI {
   }
 
   static Future<User> getUser(String uuid) async {
-    Response r = await _get(Uri.http("10.0.2.2:5000", "/get_user/$uuid"));
+    Response r = await _get("get_user/$uuid");
     if(r.statusCode > 299) {
       throw Exception("getUser: Unauthorized");
     }
@@ -71,7 +74,7 @@ class WebAPI {
 
   static Future <List<User>> downloadUsers(Gym gym) async {
     List<User> users = List<User>();
-    var result = await _get(Uri.http("10.0.2.2:5000", "/get_users"));
+    var result = await _get("get_users");
     Map j = json.decode(result.body);
     j.forEach((key, val) {
       User u = User.fromJson(val);
@@ -84,7 +87,7 @@ class WebAPI {
 
   static Future<List<Gym>> downloadGyms() async {
     List<Gym> gyms = List<Gym>();
-    var result = await _get(Uri.http("10.0.2.2:5000", "/get_gyms"));
+    var result = await _get("get_gyms");
     Map j = json.decode(result.body);
     j.forEach((key, val) {
       Gym g = Gym.fromJson(val);
@@ -96,14 +99,14 @@ class WebAPI {
 
   static Future<Gym> downloadGym(String uuid) async {
     Gym gym = Gym.unknown;
-    var result = await _get(Uri.http("10.0.2.2:5000", "/get_gym/$uuid"));
+    var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
     gym = Gym.fromJson(j[uuid]);
     return gym;
   }
 
   static Image downloadImage(String imageUUID) {
-    return Image.network("http://10.0.2.2:5000" + "/download/$imageUUID", headers: {"cookie": _cookie});
+    return Image.network("http://" + HOST + "/download/$imageUUID", headers: {"cookie": _cookie});
   }
 
   static Future<int> uploadImage(String imageUUID, {File image}) async {
@@ -116,11 +119,10 @@ class WebAPI {
         print("Found file locally");
       }
 
-
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
-      var req = http.MultipartRequest("POST", Uri.http("10.0.2.2:5000", "/add_image/$imageUUID"));
+      var req = http.MultipartRequest("POST", Uri.http(HOST, "/add_image/$imageUUID"));
       req.headers["cookie"] = _cookie;
-      var multipartFile = new http.MultipartFile('file', stream, await image.length(),
+      var multipartFile = new http.MultipartFile('data', stream, await image.length(),
           filename: basename(image.path));
       req.files.add(multipartFile);
       var response = await req.send();
@@ -131,7 +133,7 @@ class WebAPI {
   static Future<List<Rute>> downloadRutes(Gym gym) async {
     List<Rute> rutes = List<Rute>();
     try {
-      var result = await _get(Uri.http("10.0.2.2:5000", "/get_rutes"),
+      var result = await _get("get_rutes",
           headers: {"gym": gym.uuid});
       Map j = json.decode(result.body);
       j.forEach((key, val) {
@@ -157,15 +159,13 @@ class WebAPI {
   static Future<String> createUser(String username, String email, String password) async {
     String uuid = getUUID("user");
 
-    Response r = await _post(
-      Uri.http("10.0.2.2:5000", "/add_user"),
-      body:json.encode({
+    Response r = await _postJson("add_user",
+      body: {
         "username": username,
         "password": password,
         "email": email,
         "uuid": uuid
-      }),
-      json: true
+      }
     );
 
     if(r.statusCode > 200)
@@ -175,9 +175,8 @@ class WebAPI {
 
   static Future<String> createRute(Rute t) async {
     DateTime now = DateTime.now();
-    Response r = await _post(
-      Uri.http("10.0.2.2:5000", "/add_rute"),
-      body:json.encode({
+    Response r = await _postJson("add_rute",
+      body: {
         "uuid": t.uuid,
         "name": t.name,
         "image": t.imageUUID,
@@ -186,10 +185,9 @@ class WebAPI {
         "gym": t.gym.uuid,
         "grade": t.grade,
         "tag": "",
-        "date": DateFormat("yyyy-MM-dd kk:mm:ss").format(now),
-        "edit": DateFormat("yyyy-MM-dd kk:mm:ss").format(now)
-      }),
-      json: true
+        "date": format(now),
+        "edit": format(now)
+      }
     );
 
     if(r.statusCode > 200)
@@ -199,9 +197,8 @@ class WebAPI {
 
   static Future<int> saveRute(Rute t) async {
     DateTime now = DateTime.now();
-    Response r = await _post(
-      Uri.http("10.0.2.2:5000", "/save_rute"),
-      body:json.encode({
+    Response r = await _postJson("save_rute",
+      body: {
         "uuid": t.uuid,
         "name": t.name,
         "sector": t.sector,
@@ -209,9 +206,8 @@ class WebAPI {
         "grade": t.grade,
         "tag": "",
         "coordinates": json.encode(t.points),
-        "edit": DateFormat("yyyy-MM-dd kk:mm:ss").format(now)
-      }),
-      json: true
+        "edit": format(now)
+      }
     );
 
     if(r.statusCode > 200)
@@ -221,16 +217,14 @@ class WebAPI {
 
   static Future<int> saveGym(Gym g) async {
     DateTime now = DateTime.now();
-    Response r = await _post(
-      Uri.http("10.0.2.2:5000", "/save_gym"),
-      body: json.encode({
+    Response r = await _postJson("save_gym",
+      body: {
         "uuid": g.uuid,
         "name": g.name,
         "sectors": json.encode(g.sectors.toList()),
         "tags": "[]",
-        "edit": DateFormat("yyyy-MM-dd kk:mm:ss").format(now)
-      }),
-      json: true
+        "edit": format(now)
+      }
     );
 
     if(r.statusCode > 200)
@@ -239,10 +233,7 @@ class WebAPI {
   }
 
   static Future<int> deleteRute(Rute t) async {
-    Response r = await _get(
-        Uri.http("10.0.2.2:5000",
-        "/delete/" + t.uuid),
-    );
+    Response r = await _get("delete/" + t.uuid);
 
     if(r.statusCode > 299)
       return Future.error(r.statusCode);
@@ -251,7 +242,7 @@ class WebAPI {
   }
 
   static Future<int> logout() async {
-    Response r = await _get(Uri.http("10.0.2.2:5000", "/logout"));
+    Response r = await _get("logout");
 
 
     if(r.statusCode > 299)
@@ -267,16 +258,14 @@ class WebAPI {
   static Future<String> createGym(String text, Set<String> sectors, User admin) async {
     String uuid = getUUID("gym");
 
-    Response r = await _post(
-      Uri.http("10.0.2.2:5000", "/add_gym"),
-      body: json.encode({
+    Response r = await _postJson("add_gym",
+      body: {
         "uuid": uuid,
         "name": text,
         "sectors": json.encode(sectors.toList()),
         "tags": "[]",
         "admin": admin.uuid
-      }),
-      json: true
+      }
     );
 
     if(r.statusCode > 299)
@@ -285,26 +274,41 @@ class WebAPI {
   }
 
 
-  static Future<Response> _post(url, {Map<String, String> headers, body, Encoding encoding, bool json=false}) async {
+  // Encodes body if json is true and body is not a string
+  static Future<Response> _post(String dest, {Map<String, String> headers, dynamic body, Encoding encoding}) async {
     if(headers == null)
       headers = Map<String, String>();
 
-    if(json)
-      headers["content-type"] = 'application/json';
 
     headers["cookie"] = _cookie;
 
-    return http.post(url, headers:headers, body:body, encoding: encoding);
+    return http.post(Uri.http(HOST, dest), headers:headers, body:body, encoding: encoding);
 
   }
 
-  static Future<Response> _get(url, {Map<String, String> headers}) async {
+  // Encodes body if json is true and body is not a string
+  static Future<Response> _postJson(String dest, {Map<String, String> headers, Map body, Encoding encoding}) async {
+    if(headers == null)
+      headers = Map<String, String>();
+
+    headers["content-type"] = 'application/json';
+
+    String payload = conv.json.encode(body);
+
+    headers["cookie"] = _cookie;
+
+    return _post(dest, headers:headers, body:payload, encoding: encoding);
+
+  }
+
+
+  static Future<Response> _get(String dest, {Map<String, String> headers}) async {
     if(headers == null)
       headers = Map<String, String>();
 
     headers["cookie"] = _cookie;
 
-    return http.get(url, headers:headers);
+    return http.get(Uri.http(HOST, dest), headers:headers);
 
   }
 

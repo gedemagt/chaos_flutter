@@ -12,97 +12,97 @@ class RuteViewer extends StatelessWidget {
 
   RuteViewer(this._r);
 
-  final List<Comment> comments = [
-    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",    "BallClamps",
-    DateTime.now()
-  ),
-  Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",
-    "BallClamps",
-    DateTime.now()
-  ),
-    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",
-        "BallClamps",
-        DateTime.now()
-    ),
-  ];
+//  final List<Comment> comments = [
+//    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",    "BallClamps",
+//    DateTime.now()
+//  ),
+//  Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",
+//    "BallClamps",
+//    DateTime.now()
+//  ),
+//    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",
+//        "BallClamps",
+//        DateTime.now()
+//    ),
+//  ];
 
 
 
   @override
   Widget build(BuildContext context) {
-
-    List<Widget> children = List();
-
-
-    children.add(
-      Material(
-        child: Container(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child:TextField(
-            controller: TextEditingController(),
-            decoration: InputDecoration(
-              hintText: "Maah, totally sandbagged!",
-              labelText: "Add comment"
-            ),
-          )
-        )
-      )
-    );
-
-
-    children.addAll(
-      comments.map((s) {
-      return CommentWidget(s.comment, s.author, s.dateTime);
-    }));
-
-
-    return SlidingUpPanel(
-      minHeight: 50,
-      backdropEnabled: true,
-      collapsed: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child:Row(
-              children: <Widget>[
-                Icon(Icons.comment),
-                Text(
-                  "  ${comments.length}",
-                  style: TextStyle(
-                    color: Colors.black38,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    inherit: false
-                  )
-                )
-              ],
-            )
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child:
-            Row(
-              children: <Widget>[
-                Icon(Icons.star),
-                Icon(Icons.star),
-                Icon(Icons.star)
-              ],
-            )
-          )
-        ],
-      ),
-      body:ImageViewer(_r),
-      panel: IntrinsicWidth(
-        child: Container(
-          padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
-          child:Column(
-            children: children
-          )
-        )
-      )
-    );
-  }
+    return ImageViewer(_r);
+//    List<Widget> children = List();
+//
+//
+//    children.add(
+//      Material(
+//        child: Container(
+//          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+//          child:TextField(
+//            controller: TextEditingController(),
+//            decoration: InputDecoration(
+//              hintText: "Maah, totally sandbagged!",
+//              labelText: "Add comment"
+//            ),
+//          )
+//        )
+//      )
+//    );
+//
+//
+//    children.addAll(
+//      comments.map((s) {
+//      return CommentWidget(s.comment, s.author, s.dateTime);
+//    }));
+//
+//
+//    return SlidingUpPanel(
+//      minHeight: 50,
+//      backdropEnabled: true,
+//      collapsed: Row(
+//        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//        children: <Widget>[
+//          Container(
+//            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+//            child:Row(
+//              children: <Widget>[
+//                Icon(Icons.comment),
+//                Text(
+//                  "  ${comments.length}",
+//                  style: TextStyle(
+//                    color: Colors.black38,
+//                    fontWeight: FontWeight.bold,
+//                    fontSize: 30,
+//                    inherit: false
+//                  )
+//                )
+//              ],
+//            )
+//          ),
+//          Container(
+//            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+//            child:
+//            Row(
+//              children: <Widget>[
+//                Icon(Icons.star),
+//                Icon(Icons.star),
+//                Icon(Icons.star)
+//              ],
+//            )
+//          )
+//        ],
+//      ),
+//      body:ImageViewer(_r),
+//      panel: IntrinsicWidth(
+//        child: Container(
+//          padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+//          child:Column(
+//            children: children
+//          )
+//        )
+//      )
+//    );
+    }
 }
 
 class CommentWidget extends StatelessWidget {

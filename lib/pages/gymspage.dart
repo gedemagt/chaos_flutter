@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/homepage.dart';
+import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/creategympage.dart';
 
@@ -99,21 +100,25 @@ class _GymsPageState extends State<GymsPage> {
             //IconButton(icon: Icon(Icons.refresh), onPressed: doRefresh)
           ],
         ),
-        floatingActionButton: FloatingActionButton(onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateGymPage())
-          );
-        }),
-        body: _gyms.length == 0 ? Center(
-          child: Text("No gyms", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),),
-
-        ) :
-        ListView(
-            children: ruteWidgets
-
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateGymPage())
+            );
+          },
+          child: Icon(Icons.add),
         ),
-    )
+        body:RefreshIndicator(
+          onRefresh: Gym.refreshGyms,
+          child: _gyms.length == 0 ?
+            NothingToShowWidget(text: "No gyms...")
+            :
+          ListView(
+            children: ruteWidgets
+          )
+        ),
+      )
     );
   }
 }

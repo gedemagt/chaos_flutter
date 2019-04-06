@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:timer/StateManager.dart';
 import 'package:timer/models/point.dart';
-import 'package:timer/models/user.dart';
 import 'dart:ui';
 import 'dart:math';
 import 'package:timer/util.dart';
@@ -112,8 +110,8 @@ class _ImageViewerState extends State<ImageViewer> {
   List<RutePoint> points = List<RutePoint>();
   RutePoint selected;
 
-  bool canEdit = false;
-  bool editing = false;
+  bool _canEdit = false;
+  bool _editing = false;
 
   PhotoViewController crtl;
 
@@ -128,7 +126,10 @@ class _ImageViewerState extends State<ImageViewer> {
   void initState() {
     super.initState();
 
-    canEdit = StateManager().loggedInUser.role == Role.ADMIN || StateManager().loggedInUser == widget._rute.author;
+    print("Wat?");
+    print(widget._rute);
+    print(widget._rute.author);
+    _canEdit = canEdit(widget._rute.author);
 
     _rute = widget._rute;
     _image = null;
@@ -206,7 +207,7 @@ class _ImageViewerState extends State<ImageViewer> {
   @override
   Widget build(BuildContext context) {
     List<Widget> barActions = List<Widget>();
-    if (canEdit) {
+    if (_canEdit) {
       barActions.add(IconButton(
           icon: Icon(Icons.delete),
           onPressed: () {
@@ -216,7 +217,7 @@ class _ImageViewerState extends State<ImageViewer> {
             });
           }));
       barActions.add(IconButton(
-        icon: Icon(editing ? Icons.visibility : Icons.edit),
+        icon: Icon(_editing ? Icons.visibility : Icons.edit),
         onPressed: () {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             var sH = _keyRed.currentContext.size.height / height;
@@ -230,7 +231,7 @@ class _ImageViewerState extends State<ImageViewer> {
                 scaleState: crtl.initial.scaleState);
             updateOffsetAndScale();
           });
-          setState(() => editing = !editing);
+          setState(() => _editing = !_editing);
         }));
   }
 
@@ -243,7 +244,7 @@ class _ImageViewerState extends State<ImageViewer> {
     List<Widget> stuff = List<Widget>();
     Widget imageContainer = Container(child:pv, key:_keyRed);
 
-    if(editing) {
+    if(_editing) {
       imageContainer = GestureDetector(
           onPanUpdate: (s) {
           print("pasn)");
@@ -268,7 +269,7 @@ class _ImageViewerState extends State<ImageViewer> {
     stuff.add(imageContainer);
     points.forEach(
       (p) => stuff.add(
-        PointWidget(p, _handleSelect, size, editing, pvOffset)
+        PointWidget(p, _handleSelect, size, _editing, pvOffset)
       )
     );
 
@@ -283,7 +284,7 @@ class _ImageViewerState extends State<ImageViewer> {
       //)
     );
 
-    if(editing) {
+    if(_editing) {
       Widget editRow = Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[

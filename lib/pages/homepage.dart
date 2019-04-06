@@ -5,17 +5,18 @@ import 'package:timer/pages/filterpage.dart';
 import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/loginpage.dart';
 import 'package:timer/pages/widgets/RuteListItemWidget.dart';
+import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/providers/provider.dart';
 import 'package:timer/providers/webprovider.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/rutecreator.dart';
 import 'package:timer/models/user.dart';
+import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/creategympage.dart';
 
 class RuteListPage extends StatefulWidget {
   RuteListPage({Key key, this.title}) : super(key: key);
-
 
   final String title;
 
@@ -34,23 +35,29 @@ class _RuteListPageState extends State<RuteListPage> {
   Filter _filter = Filter();
 
   bool _showError = false;
+  bool _showWaiting = false;
 
-  Future<void> doRefresh() async {
-    await prov.refresh();
+  Future<void> doRefresh({bool show=false}) async {
+
+      if(_rutes.length==0 && show)
+        setState(() {
+        _showWaiting = true;
+        });
+
+    //await prov.refresh();
     User.refreshUsers().then(
-            (s) => prov.refresh()
-
+      (s) => prov.refresh()
     ).then(
-            (s) {
-              setState(() {
-                print("Hello");
-                _showError=false;
-              });
-            }
-    ).catchError((s) {setState(() {
-      print("No");
+      (s) {
+        setState(() {
+        _showError=false;
+        });
+      }
+    ).catchError((s) {
+      setState(() {
       _showError=true;
-    });} );
+      });
+    });
   }
 
   @override
@@ -59,11 +66,12 @@ class _RuteListPageState extends State<RuteListPage> {
     prov.init();
     prov.stream.stream.listen((newRutes){
       setState(() {
+        _showWaiting = false;
         _rutes = newRutes;
         _filteredRutes = _filter.filter(_rutes);
       });
     });
-    doRefresh();
+    doRefresh(show: true);
   }
 
 
@@ -140,11 +148,11 @@ class _RuteListPageState extends State<RuteListPage> {
       }),
       body:
       RefreshIndicator(
-        onRefresh: doRefresh,
-        child:  ListView(
-          children: _rutes.length == 0 ? [Center(
-            child: Text("No rutes", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),),
-          )] : ruteWidgets
+        onRefresh: () => doRefresh(show: false),
+        child:  _showWaiting ? SizedBox.expand(child: Center(child:CircularProgressIndicator())) :  ListView(
+          children: _rutes.length == 0 ? [
+            NothingToShowWidget(text:"Nothing to show")
+          ] : ruteWidgets
         )
       ),
       bottomSheet: !_showError ? null : Container(
@@ -172,7 +180,7 @@ class _RuteListPageState extends State<RuteListPage> {
                 child: ListTile(
                   title: Text(StateManager().loggedInUser.name,
                   style: Theme.of(context).primaryTextTheme.title),
-                  leading: Icon(Icons.person),
+                  leading: Icon(Icons.account_circle, size: 50,),
                   subtitle: Text("<email>",
                   style: Theme.of(context).primaryTextTheme.caption)
               )
@@ -182,7 +190,7 @@ class _RuteListPageState extends State<RuteListPage> {
             ListTile(
               title: Text(StateManager().gym.name),
               leading: Icon(Icons.home),
-              trailing: StateManager().loggedInUser == StateManager().gym.admin || StateManager().loggedInUser.role == Role.ADMIN ?
+              trailing: canEdit(StateManager().gym.admin) ?
                 IconButton(
                   icon: Icon(Icons.settings),
                   onPressed: () {

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/ruteviewer.dart';
+import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/util.dart';
 
 class RuteListItemWidget extends StatelessWidget {
@@ -50,20 +51,7 @@ class RuteListItemWidget extends StatelessWidget {
             )
           )
         ),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: getColor(_rute.sector),
-            shape: BoxShape.circle
-          ),
-          child: Center(
-            child: Text(getText(_rute.sector),
-              style: TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.white),
-            )
-          )
-        ),
+        leading: SectorIndicator(_rute.sector),
         onTap: () {
           Navigator.push(
             context,

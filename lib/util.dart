@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timer/StateManager.dart';
 
 import 'package:timer/models/point.dart';
+import 'package:timer/models/user.dart';
 
 
 String host = "127.0.0.1:5000";
@@ -27,6 +29,12 @@ Type intToType(int i) {
   return Type.NORMAL;
 }
 
+bool canEdit(User u) {
+  if(StateManager().loggedInUser == Role.ADMIN) return true;
+  if(u == null) return false;
+  if(u == User.unknown) return false;
+  return StateManager().loggedInUser == u;
+}
 
 var colormap = {
   "grå": Colors.grey,

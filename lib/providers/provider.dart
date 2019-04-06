@@ -11,7 +11,7 @@ abstract class Provider<T> {
 
   Future<void> delete(T t) async {}
 
-  Future<void> add(T t) async {}
+  Future<T> add(String name, String sector, String imageUUID);
 
   Future<void> save(T t) async {}
 

@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final emailField = TextField(
-      obscureText: true,
+      obscureText: false,
       style: style,
       controller: usernameController,
 
@@ -69,6 +69,7 @@ class _LoginPageState extends State<LoginPage> {
           WebAPI.login(usernameController.text, passwordController.text).then((u) {
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteListPage()));
           }, onError: (k) {
+            print(k.toString());
             String text = "Wrong credentials";
             if(k is SocketException)
               text = "Internet problems...";
@@ -111,12 +112,14 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       key: ss,
+      resizeToAvoidBottomInset: false,
       body: Center(
         child: Container(
           color: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(36.0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -129,11 +132,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 loginButon,
                 SizedBox(
-                  height: 15.0,
+                  height: 25.0,
                 ),
                 register,
                 SizedBox(
-                  height: 15.0,
+                  height: 45.0,
                 ),
               ],
             ),

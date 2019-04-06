@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
+import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/homepage.dart';
 
@@ -19,6 +20,7 @@ class _CreateGymPageState extends State<CreateGymPage> {
 
   TextEditingController _nameCtrl = TextEditingController();
   TextEditingController _addSector = TextEditingController();
+  Set<String> sectors = Set<String>();
 
   @override
   void initState() {
@@ -31,18 +33,19 @@ class _CreateGymPageState extends State<CreateGymPage> {
   Widget build(BuildContext context) {
 
 
-    Set<String> sectors = Set<String>();
     if(widget.gym != null) {
       sectors = widget.gym.sectors;
       _nameCtrl.text = widget.gym.name;
     }
     _addSector.text = "";
-
     List<Widget> sectorWidgets = List<Widget>();
-    for(String s in sectors) {
+    List<String> sorted = sectors.toList();
+    sorted.sort((o1,o2) => o1.compareTo(o2));
+    for(String s in sorted) {
       sectorWidgets.add(
         ListTile(
           title: Text(s),
+          leading: SectorIndicator(s),
           trailing: IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
@@ -90,41 +93,48 @@ class _CreateGymPageState extends State<CreateGymPage> {
             )
           ],
         ),
-        body: Column(
-          children: <Widget> [
-            TextField(
-              controller: _nameCtrl,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                labelText: "Gym name"
-              )
-            ),
-            Row(
-
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(child:
-                  TextField(
-                    controller: _addSector,
-                    decoration: InputDecoration(
-                        contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        labelText: "Add sector"
-                    )
-                  )
-                ),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    setState((){
-                      sectors.add(_addSector.text);
-                    });
-                  }
+        body: Container(
+          child: Column(
+            children: <Widget> [
+              Container(
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                      title:TextField(
+                        controller: _nameCtrl,
+                        decoration: InputDecoration(
+                            labelText: "Gym name"
+                        )
+                      )
+                    ),
+                    ListTile(
+                      title: TextField(
+                        controller: _addSector,
+                        decoration: InputDecoration(
+                            labelText: "Add sector"
+                        )
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {
+                          setState((){
+                            sectors.add(_addSector.text);
+                          });
+                        }
+                      ),
+                    ),
+                  ],
                 )
-              ],
-            ),
-            Expanded(child:ListView(children: sectorWidgets))
-          ]
-        ),
+              ),
+              Expanded(
+                child: ListView(
+                  children: sectorWidgets
+                )
+              )
+            ]
+          ),
+        )
       )
     );
   }

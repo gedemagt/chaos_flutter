@@ -13,9 +13,11 @@ class LocalRuteProvider extends Provider<Rute> {
   }
 
   @override
-  Future<void> add(Rute t) async {
-    _addOrSave(t);
+  Future<Rute> add(String name, String sector, String imageUUID) async {
+    Rute rute = Rute.create(name, sector, imageUUID, this);
+    _addOrSave(rute);
     fireListeners();
+    return rute;
   }
 
   @override
