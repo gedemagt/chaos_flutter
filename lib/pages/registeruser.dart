@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/homepage.dart';
 import 'package:timer/webapi.dart';
 
@@ -71,7 +72,7 @@ class _RegisterUserPageState extends State<RegisterUserPage> {
 
           WebAPI.createUser(usernameController.text, email.text, passwordController.text).then((u) {
             WebAPI.login(usernameController.text, passwordController.text).then((u){
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteListPage()));
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
             });
           }).catchError((statusCode) {
             setState(() {
@@ -95,6 +96,7 @@ class _RegisterUserPageState extends State<RegisterUserPage> {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Center(
         child: Container(
           color: Colors.white,
