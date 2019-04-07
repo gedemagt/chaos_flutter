@@ -7,9 +7,6 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/point.dart';
 import 'package:timer/models/user.dart';
 
-
-String host = "127.0.0.1:5000";
-
 int typeToInt(Type type) {
   if(type == Type.START) return 1;
   if(type == Type.NORMAL) return 2;
@@ -30,7 +27,7 @@ Type intToType(int i) {
 }
 
 bool canEdit(User u) {
-  if(StateManager().loggedInUser == Role.ADMIN) return true;
+  if(StateManager().loggedInUser.role == Role.ADMIN) return true;
   if(u == null) return false;
   if(u == User.unknown) return false;
   return StateManager().loggedInUser == u;

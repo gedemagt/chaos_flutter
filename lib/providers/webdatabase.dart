@@ -64,9 +64,10 @@ class WebDatabase extends Database {
   @override
   Future<Gym> getGym(String uuid) async {
     if(gymCache != null && gymCache.length==0) {
+      print("Gym cache seems empty - refreshing...");
       await refreshGyms();
     }
-    Gym cached = getCachedGym(uuid);
+    Gym cached = gymCache[uuid];
     if(cached == null) {
       return Gym.unknown;
     }
@@ -75,16 +76,17 @@ class WebDatabase extends Database {
 
   @override
   Future<Rute> getRute(String uuid) async {
-    Rute cached = getCachedRute(uuid);
+    Rute cached = ruteCache[uuid];
     return cached;
   }
 
   @override
   Future<User> getUser(String uuid) async {
     if(userCache != null && userCache.length==0) {
+      print("User cache seems empty - refreshing...");
       await refreshUsers();
     }
-    User cached = getCachedUser(uuid);
+    User cached = userCache[uuid];
     if(cached == null) {
       return WebAPI.getUser(uuid);
     }
@@ -95,6 +97,7 @@ class WebDatabase extends Database {
   Future<void> refreshGyms() async {
     try {
       List<Gym> gyms = await WebAPI.downloadGyms();
+      print(gyms);
       gymCache.clear();
       gyms.forEach((g) => gymCache[g.uuid] = g);
       gymStream.sink.add(getGyms());
@@ -144,6 +147,11 @@ class WebDatabase extends Database {
   @override
   Future<User> saveUser(User user) async {
     throw Exception("Not implemented yet");
+  }
+
+  @override
+  Future<void> init() async {
+    await WebAPI.init();
   }
 
 }

@@ -46,7 +46,7 @@ class StateManager {
     print("Loaded gym: $_loggedInUser");
     String rememberedGym = sp.get("gym");
     try {
-      _gym = Gym.fromJson(json.decode(rememberedGym));
+      _gym = await Gym.fromJson(json.decode(rememberedGym));
     } catch(e) {
       print("Error loading gym - defaulting to gym.unknown");
       print(e.toString());

@@ -13,21 +13,23 @@ import 'package:timer/models/gym.dart';
 import 'package:timer/models/user.dart';
 
 class Rute {
-  DateTime _created;
-  DateTime _edit;
   String _name;
   String _uuid;
-  String _sector;
-  String _tag;
+  DateTime _created;
+  DateTime _edit;
   User _author = User.unknown;
   List<RutePoint> _points;
   int _grade = 0;
-  Gym _gym;
-  Image _image;
+  Database _myProvider;
+  String _sector;
   String _imageUUID;
+  Gym _gym;
+
+  String _tag;
+  Image _image;
 
   UUIDImageProvider prov = UUIDImageProvider();
-  Database _myProvider;
+
 
   get image => _image;
   get name => _name;
@@ -46,7 +48,19 @@ class Rute {
     save();
   }
 
-  Rute._internal(this._uuid, this._name, this._created, this._edit, this._author, this._points, this._grade, this._myProvider);
+  Rute._internal(
+      this._uuid,
+      this._name,
+      this._created,
+      this._edit,
+      this._author,
+      this._points,
+      this._grade,
+      this._myProvider,
+      this._sector,
+      this._imageUUID,
+      this._gym,
+      this._tag);
 
   Rute.create(String name, String sector, String imageUUID, Database provider)  {
 
@@ -100,25 +114,24 @@ class Rute {
     };
   }
 
-  Rute.fromJson(Map map, Database prov) {
+  static Future<Rute> fromJson(Map map, Database prov) async {
 
-    _myProvider = prov;
 
-    _imageUUID = map["image"];
-    _uuid = map["uuid"];
-    _name = map["name"];
-    _gym = WebDatabase().getCachedGym(map["gym"]);
-    _sector = map["sector"];
-    _tag = map["tag"];
-    _name = map["name"];
-    _author = WebDatabase().getCachedUser(map["author"]);
+    String _imageUUID = map["image"];
+    String _uuid = map["uuid"];
+    String _name = map["name"];
+    Gym _gym = await WebDatabase().getGym(map["gym"]);
+    String _sector = map["sector"];
+    String _tag = map["tag"];
+    User _author = await WebDatabase().getUser(map["author"]);
+    int _grade = 0;
     try {
       _grade = int.parse(map["grade"]);
     } catch (e) {
       _grade = 0;
     }
-    _created = map.containsKey("date") ? DateTime.parse(map["date"]) : DateTime(1970);
-    _edit = map.containsKey("edit") ? DateTime.parse(map["edit"]) : _created;
+    DateTime _created = map.containsKey("date") ? DateTime.parse(map["date"]) : DateTime(1970);
+    DateTime _edit = map.containsKey("edit") ? DateTime.parse(map["edit"]) : _created;
 
     String coordinates = map["coordinates"];
     // Hacky, yes
@@ -129,7 +142,7 @@ class Rute {
       }
     }
 
-    _points = List<RutePoint>();
+    List _points = List<RutePoint>();
     if(coordinates != null) {
       json.decode(coordinates).forEach((val) {
         RutePoint rp = RutePoint.ofSize(val["x"], val["y"], val["size"]);
@@ -138,6 +151,8 @@ class Rute {
       });
 
     }
+
+    return Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag);
   }
 
   @override

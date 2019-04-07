@@ -25,17 +25,18 @@ class Gym {
   get sectors => _sectors;
   List<String> _tags = List<String>();
 
-  static Gym unknown = Gym._internal("unknown-gym", "Unknown Gym", DateTime(1), DateTime(1), Set<String>(), []);
+  static Gym unknown = Gym._internal("unknown-gym", "Unknown Gym", User.unknown, DateTime(1), DateTime(1), Set<String>(), [], 0);
 
 
-  Gym._internal(this._uuid, this._name, this._created, this._edit, this._sectors, this._tags);
+  Gym._internal(this._uuid, this._name, this._admin, this._created, this._edit, this._sectors, this._tags, this._nrRutes);
 
 
-  Gym.fromJson(Map map) {
-    _uuid = map["uuid"];
-    _name = map["name"];
-    _admin = WebDatabase().getCachedUser(map["admin"]);
-
+  static Future<Gym> fromJson(Map map) async {
+    String _uuid = map["uuid"];
+    String _name = map["name"];
+    User _admin = await WebDatabase().getUser(map["admin"]);
+    Set<String> _sectors = Set();
+    List<String> _tags = List();
     if(map["sectors"] != null) {
       if(map["sectors"] is List<dynamic>) {
         List<dynamic> list = map["sectors"];
@@ -53,9 +54,10 @@ class Gym {
         // I guess we didn't work - we assume there are none
       }
     }
-    _created = parse(map["date"]);
-    _edit = map.containsKey("edit") ? _edit = parse(map["edit"]) : _created;
-    _nrRutes = map["n_rutes"];
+    DateTime _created = parse(map["date"]);
+    DateTime _edit = map.containsKey("edit") ? parse(map["edit"]) : _created;
+    int _nrRutes = map["n_rutes"];
+    return Gym._internal(_uuid, _name, _admin, _created, _edit, _sectors, _tags, _nrRutes);
   }
 
   Map<String, Object> toJson() {

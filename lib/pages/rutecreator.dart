@@ -23,25 +23,25 @@ class RuteCreator extends StatefulWidget {
 
 class _RuteCreatorState extends State<RuteCreator> {
 
+  static const double MAX_SIZE = 2048;
+
   String _sector = "Uncategorized";
   File _image;
-  ImageSource _source;
+  //ImageSource _source;
   final TextEditingController _nameCtrl = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future getImageCamera() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.camera);
-    _source = ImageSource.camera;
+    var image = await ImagePicker.pickImage(source: ImageSource.camera, maxHeight: MAX_SIZE, maxWidth: MAX_SIZE);
     setState(() {
       _image = image;
     });
   }
 
   Future getImageGallery() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    _source = ImageSource.gallery;
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery, maxHeight: MAX_SIZE, maxWidth: MAX_SIZE);
     setState(() {
       _image = image;
     });
@@ -53,8 +53,8 @@ class _RuteCreatorState extends State<RuteCreator> {
 
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
-    if(_source == ImageSource.camera) _image.copy(newPath);
-    else if (_source == ImageSource.gallery) _image.copy(newPath);
+    _image.copy(newPath);
+
     return imageUUID;
   }
 
@@ -129,8 +129,8 @@ class _RuteCreatorState extends State<RuteCreator> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text("Sector:  ",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)
+                            Text("Sec:  ",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
                             ),
                             DropdownButton<String>(
                               value: _sector,

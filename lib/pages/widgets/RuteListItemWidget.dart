@@ -14,6 +14,7 @@ class RuteListItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
       elevation: 0.1,
       child: ListTile(

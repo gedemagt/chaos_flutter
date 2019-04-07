@@ -6,6 +6,8 @@ import 'package:timer/models/user.dart';
 
 abstract class Database {
 
+  Future<void> init();
+
   Future<User> saveUser(User user);
   Future<User> getUser(String uuid);
   Future<User> createUser(String name, String email, String password);
@@ -27,20 +29,6 @@ abstract class Database {
   Map<String, Rute> ruteCache = Map();
   Map<String, User> userCache = Map();
   Map<String, Gym> gymCache = Map();
-
-  Rute getCachedRute(String uuid) {
-    return ruteCache[uuid];
-  }
-
-  Gym getCachedGym(String uuid) {
-    if(!gymCache.containsKey(uuid)) return Gym.unknown;
-    return gymCache[uuid];
-  }
-
-  User getCachedUser(String uuid) {
-    if(!userCache.containsKey(uuid)) return User.unknown;
-    return userCache[uuid];
-  }
 
   List<Rute> getRutes() {
     return ruteCache.values.toList();

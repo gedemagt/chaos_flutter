@@ -5,13 +5,6 @@ import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/loginpage.dart';
 import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
-import 'package:timer/pages/homepage.dart';
-
-
-
-
-
-
 
 class ChaosDrawer extends StatelessWidget {
 
@@ -22,7 +15,7 @@ class ChaosDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(ModalRoute.of(context).runtimeType);
+    print(canEdit(StateManager().gym.admin));
     return Drawer(
       child: ListView(
         children: <Widget>[
@@ -36,17 +29,6 @@ class ChaosDrawer extends StatelessWidget {
                       style: Theme.of(context).primaryTextTheme.caption)
               )
           ),
-          ListTile(
-            title: Text("Rutes"),
-            leading: Icon(Icons.speaker_group),
-            onTap: isRutesSelected ? null : () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RuteListPage())
-              );
-            },
-          ),
-          Divider(),
           ListTile(
             title: Text(StateManager().gym.name),
             leading: Icon(Icons.home),

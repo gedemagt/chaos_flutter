@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/homepage.dart';
+import 'package:timer/pages/widgets/ChaosDrawer.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/providers/webdatabase.dart';
@@ -156,6 +156,7 @@ class _GymsPageState extends State<GymsPage> {
           },
           child: Icon(Icons.add),
         ),
+        drawer: ChaosDrawer(),
         body: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

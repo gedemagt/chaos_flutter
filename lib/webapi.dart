@@ -29,10 +29,14 @@ class WebAPI {
     return _cookie != null && _cookie != "";
   }
 
+  static bool _hasBeenInitialized = false;
+
   static Future<void> init() async {
-  SharedPreferences sp  = await SharedPreferences.getInstance();
+    if(_hasBeenInitialized) return;
+    SharedPreferences sp  = await SharedPreferences.getInstance();
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
+    _hasBeenInitialized = true;
   }
 
 
@@ -88,10 +92,9 @@ class WebAPI {
     List<Gym> gyms = List<Gym>();
     var result = await _get("get_gyms");
     Map j = json.decode(result.body);
-    j.forEach((key, val) {
-      Gym g = Gym.fromJson(val);
-      gyms.add(g);
-    });
+    for(var entry in j.entries) {
+      gyms.add(await Gym.fromJson(entry.value));
+    }
     return gyms;
   }
 
@@ -99,7 +102,7 @@ class WebAPI {
     Gym gym = Gym.unknown;
     var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
-    gym = Gym.fromJson(j[uuid]);
+    gym = await Gym.fromJson(j[uuid]);
     return gym;
   }
 
@@ -118,12 +121,14 @@ class WebAPI {
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
-      var req = http.MultipartRequest("POST", Uri.http(HOST, "/add_image/$imageUUID"));
+      print(getURI(HOST, "/add_image/$imageUUID"));
+      var req = http.MultipartRequest("POST", getURI(HOST, "add_image/$imageUUID"));
       req.headers["cookie"] = _cookie;
       var multipartFile = new http.MultipartFile('data', stream, await image.length(),
           filename: basename(image.path));
       req.files.add(multipartFile);
       var response = await req.send();
+      print("OMG ${response.statusCode}");
       return Future.value(response.statusCode);
   }
 
@@ -133,18 +138,20 @@ class WebAPI {
     var result = await _get("get_rutes",
         headers: {"gym": gym.uuid});
     Map j = json.decode(result.body);
-    j.forEach((key, val) {
+
+    for(var entry in j.entries) {
+
+      var val = entry.value;
       if (!(val is Map)) {
-      //print("Could not parse $val");
+        //print("Could not parse $val");
       }
       else if(val["status"] == 1) {
         //print("Skipping deleted rute");
       }
       else{
-        rutes.add(Rute.fromJson(val, WebDatabase()));
+        rutes.add(await Rute.fromJson(val, WebDatabase()));
       }
-
-    });
+    }
     return rutes;
   }
 
@@ -307,12 +314,13 @@ class WebAPI {
   }
 
   static Uri getURI(String host, String dest) {
+    if(dest.startsWith("/")) dest = dest.replaceFirst("/", "");
 
     if (host.contains("/")) {
       List<String> parts = split(host);
       host = parts[0];
       List<String> last = parts.getRange(1, parts.length).toList();
-      last.add(dest);
+      last.addAll(split(dest));
       dest = joinAll(last);
     }
     return Uri.http(host, dest);
