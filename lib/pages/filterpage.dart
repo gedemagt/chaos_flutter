@@ -102,61 +102,73 @@ class _FilterPageState extends State<FilterPage> {
           ],
         ),
         body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget> [
-            Text("Order by:"),
-            ListTile(
-              title: Text("Date"),
-              trailing: Radio(
-                value: 0,
-                groupValue: _orderByValue,
-                onChanged: _setOrderBy,
-              ),
-            ),
-            ListTile(
-              title: Text("Name"),
-              trailing: Radio(
-                value: 1,
-                groupValue: _orderByValue,
-                onChanged: _setOrderBy,
-              ),
-            ),
-            ListTile(
-              title: Text("Username"),
-              trailing: Radio(
-                value: 2,
-                groupValue: _orderByValue,
-                onChanged: _setOrderBy,
-              ),
-            ),
-            ListTile(
-              title: Text("Grade"),
-              trailing: Radio(
-                value: 3,
-                groupValue: _orderByValue,
-                onChanged: _setOrderBy,
-              ),
-            ),
-            ListTile(
-              title: Text("Ascending"),
-              trailing: Switch(value: _ascending, onChanged: (v) => setState((){_ascending = v;})),
-            ),
-            Text("Grade interval"),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child:Row(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget> [
-                  CircleAvatar(
-                    child: Text(numberToGrade(_min.toInt())),
+            FilterItem(
+              heading: "Order by",
+              child: Column(children: <Widget>[
+                ListTile(
+                  title: Text("Date"),
+                  trailing: Radio(
+                    value: 0,
+                    groupValue: _orderByValue,
+                    onChanged: _setOrderBy,
                   ),
-                  Expanded(child:w),
-                  CircleAvatar(
-                    child: Text(numberToGrade(_max.toInt())),
+                ),
+                ListTile(
+                  title: Text("Name"),
+                  trailing: Radio(
+                    value: 1,
+                    groupValue: _orderByValue,
+                    onChanged: _setOrderBy,
                   ),
-                ]
+                ),
+                ListTile(
+                  title: Text("Username"),
+                  trailing: Radio(
+                    value: 2,
+                    groupValue: _orderByValue,
+                    onChanged: _setOrderBy,
+                  ),
+                ),
+                ListTile(
+                  title: Text("Grade"),
+                  trailing: Radio(
+                    value: 3,
+                    groupValue: _orderByValue,
+                    onChanged: _setOrderBy,
+                  ),
+                ),
+                ListTile(
+                  title: Text("Ascending"),
+                  trailing: Switch(value: _ascending, onChanged: (v) => setState((){_ascending = v;})),
+                )],),
+            ),
+            FilterItem(
+              heading: "Grade interval",
+              child: Container(
+                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child:Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget> [
+                        CircleAvatar(
+                          child: Text(numberToGrade(_min.toInt())),
+                        ),
+                        Expanded(child:w),
+                        CircleAvatar(
+                          child: Text(numberToGrade(_max.toInt())),
+                        ),
+                      ]
+                  )
               )
             ),
-            sectorChooser
+            FilterItem(
+              heading: "Sector",
+              child: Container(
+                alignment: Alignment.center,
+                child: sectorChooser,
+              ),
+            )
           ]
         ),
       )
@@ -168,4 +180,35 @@ class _FilterPageState extends State<FilterPage> {
       _orderByValue = value;
     });
   }
+}
+
+class FilterItem extends StatelessWidget {
+
+  final Widget child;
+  final String heading;
+
+  FilterItem({this.child, this.heading});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+        child: ListTile(
+          title: Container(
+            padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: Center(
+              child: Text(heading,
+                style: TextStyle(
+                  fontSize: 20
+                ),
+              )
+            )
+          ),
+          subtitle: child,
+        )
+      )
+    );
+  }
+
 }
