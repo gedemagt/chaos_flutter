@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -33,16 +34,24 @@ class _RuteListPageState extends State<RuteListPage> {
 
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
+  StreamSubscription ss;
+
   @override
   void initState() {
 
-    prov.ruteStream.stream.listen((data) {
+    ss = prov.ruteStream.stream.listen((data) {
       setState(() {
         _rutes = data;
         _filteredRutes = _filter.filter(_rutes);
       });
     }, onError: (o, stacktrace) {
       if(o is SocketException) {
+        if(_rutes == null) {
+          setState(() {
+            _rutes  = List<Rute>();
+            _filteredRutes  = List<Rute>();
+          });
+        }
         _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Internet connection error...")));
       }
       else {
@@ -50,10 +59,15 @@ class _RuteListPageState extends State<RuteListPage> {
       }
     });
 
-    prov.refreshUsers().then((s) => prov.refreshRutes());
+    prov.refreshRutes();
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    if(ss != null) ss.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +129,7 @@ class _RuteListPageState extends State<RuteListPage> {
             );
           }),
           body: body,
-          drawer: ChaosDrawer(),
+          drawer: ChaosDrawer(isRutesSelected: true),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _filter.author == StateManager().loggedInUser ? 1 : 0,
             onTap: (idx) {

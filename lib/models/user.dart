@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:timer/util.dart';
-import 'package:timer/webapi.dart';
 
 enum Role {
   USER, ADMIN
@@ -20,25 +17,9 @@ class User {
   get name => _name;
   get uuid => _uuid;
 
-  static final Map<String, User> _cache = <String, User>{unknown.uuid: unknown};
 
   User._internal(this._uuid, this._name, this._created, this._edit);
 
-
-  static Future<void> refreshUsers() async {
-    (await WebAPI.downloadUsers(null)).forEach((u)=>_cache[u.uuid] = u);
-  }
-
-  static User fromName(String name) {
-    _cache.forEach((key, value) {if(value.name == name) return value;});
-    return null;
-  }
-
-
-  static User fromUUID(String uuid) {
-    if(!_cache.containsKey(uuid)) return User.unknown;
-    return _cache[uuid];
-  }
 
   Role getRole(String s) {
     if(s.contains("ADMIN")) return Role.ADMIN;

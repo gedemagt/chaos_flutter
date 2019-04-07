@@ -8,6 +8,14 @@ import 'package:timer/webapi.dart';
 
 class WebDatabase extends Database {
 
+  static final WebDatabase _singleton = new WebDatabase._internal();
+
+  factory WebDatabase() {
+    return _singleton;
+  }
+
+  WebDatabase._internal();
+
   @override
   Future<Gym> createGym(String name, User admin, {List<String> sectors, List<String> tags}) async {
     String uuid = await WebAPI.createGym(name, sectors.toSet(), admin);
@@ -55,6 +63,9 @@ class WebDatabase extends Database {
 
   @override
   Future<Gym> getGym(String uuid) async {
+    if(gymCache != null && gymCache.length==0) {
+      await refreshGyms();
+    }
     Gym cached = getCachedGym(uuid);
     if(cached == null) {
       return Gym.unknown;
@@ -70,6 +81,9 @@ class WebDatabase extends Database {
 
   @override
   Future<User> getUser(String uuid) async {
+    if(userCache != null && userCache.length==0) {
+      await refreshUsers();
+    }
     User cached = getCachedUser(uuid);
     if(cached == null) {
       return WebAPI.getUser(uuid);
@@ -79,10 +93,15 @@ class WebDatabase extends Database {
 
   @override
   Future<void> refreshGyms() async {
-    List<Gym> gyms = await WebAPI.downloadGyms();
-    gymCache.clear();
-    gyms.forEach((g) => gymCache[g.uuid] = g);
-    gymStream.sink.add(getGyms());
+    try {
+      List<Gym> gyms = await WebAPI.downloadGyms();
+      gymCache.clear();
+      gyms.forEach((g) => gymCache[g.uuid] = g);
+      gymStream.sink.add(getGyms());
+    }
+    catch (o) {
+      gymStream.sink.addError(o);
+    }
   }
 
   @override
@@ -100,10 +119,14 @@ class WebDatabase extends Database {
 
   @override
   Future<void> refreshUsers() async {
-    List<User> users = await WebAPI.downloadUsers(StateManager().gym);
-    userCache.clear();
-    users.forEach((u) => userCache[u.uuid] = u);
-    userStream.sink.add(getUsers());
+    try {
+      List<User> users = await WebAPI.downloadUsers(StateManager().gym);
+      userCache.clear();
+      users.forEach((u) => userCache[u.uuid] = u);
+      userStream.sink.add(getUsers());
+    } catch(o) {
+      userStream.sink.addError(o);
+    }
   }
 
   @override

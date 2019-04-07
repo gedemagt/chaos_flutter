@@ -90,11 +90,11 @@ class _FilterPageState extends State<FilterPage> {
               icon: Icon(Icons.check),
               onPressed: () {
                 Navigator.pop(context, Filter(
-                    orderBy: _orderByValue,
-                    ascending: _ascending,
-                    minGrade: _min.toInt(),
-                    maxGrade: _max.toInt(),
-                  sector: _sector
+                  orderBy: _orderByValue,
+                  ascending: _ascending,
+                  minGrade: _min.toInt(),
+                  maxGrade: _max.toInt(),
+                  sector: _sector == "All" ? null : _sector
                   )
                 );
               },

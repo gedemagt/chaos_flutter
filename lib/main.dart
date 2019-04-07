@@ -8,8 +8,8 @@ import 'package:timer/pages/gymspage.dart';
 
 Future main() async {
 
-  WebAPI.init();
-  StateManager().init();
+  await WebAPI.init();
+  await StateManager().init();
 
   Widget _default;
 

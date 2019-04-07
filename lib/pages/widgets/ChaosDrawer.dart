@@ -7,9 +7,22 @@ import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/homepage.dart';
 
+
+
+
+
+
+
 class ChaosDrawer extends StatelessWidget {
+
+  final bool isRutesSelected;
+  final bool isGymSelected;
+
+  ChaosDrawer({this.isRutesSelected = true, this.isGymSelected = false});
+
   @override
   Widget build(BuildContext context) {
+    print(ModalRoute.of(context).runtimeType);
     return Drawer(
       child: ListView(
         children: <Widget>[
@@ -26,7 +39,7 @@ class ChaosDrawer extends StatelessWidget {
           ListTile(
             title: Text("Rutes"),
             leading: Icon(Icons.speaker_group),
-            onTap: () {
+            onTap: isRutesSelected ? null : () {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => RuteListPage())
@@ -47,7 +60,7 @@ class ChaosDrawer extends StatelessWidget {
                 );
               },
             ) : null,
-            onTap: () {
+            onTap: isGymSelected ? null : () {
               Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => GymsPage())
@@ -59,7 +72,7 @@ class ChaosDrawer extends StatelessWidget {
             title: Text("Logout"),
             leading: Icon(Icons.navigate_before),
             onTap: () {
-              WebAPI.logout().then((s) {
+              WebAPI.logout().whenComplete(() {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => LoginPage()));

@@ -11,7 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
-import 'package:timer/providers/webprovider.dart';
+import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:http/http.dart' as http;
@@ -20,8 +20,8 @@ import 'package:timer/util.dart';
 
 class WebAPI {
 
-  //static const String HOST = "195.201.200.125/chaos";
-  static const String HOST = "10.0.2.2:5000";
+  static const String HOST = "195.201.200.125/chaos";
+  //static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
 
@@ -29,7 +29,7 @@ class WebAPI {
     return _cookie != null && _cookie != "";
   }
 
-  static void init() async {
+  static Future<void> init() async {
   SharedPreferences sp  = await SharedPreferences.getInstance();
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
@@ -141,7 +141,7 @@ class WebAPI {
         //print("Skipping deleted rute");
       }
       else{
-        rutes.add(Rute.fromJson(val, WebRuteProvider()));
+        rutes.add(Rute.fromJson(val, WebDatabase()));
       }
 
     });
@@ -234,14 +234,15 @@ class WebAPI {
   }
 
   static Future<int> logout() async {
+
+    StateManager().loggedInUser = null;
+    _cookie = "";
     Response r = await _get("logout");
 
 
     if(r.statusCode > 299)
       return Future.error(r.statusCode);
     else {
-      StateManager().loggedInUser = null;
-      _cookie = "";
       return r.statusCode;
     }
 
@@ -274,7 +275,7 @@ class WebAPI {
 
     headers["cookie"] = _cookie;
 
-    return http.post(Uri.http(HOST, dest), headers:headers, body:body, encoding: encoding);
+    return http.post(getURI(HOST, dest), headers:headers, body:body, encoding: encoding);
 
   }
 
@@ -300,8 +301,21 @@ class WebAPI {
 
     headers["cookie"] = _cookie;
 
-    return http.get(Uri.http(HOST, dest), headers:headers);
 
+     return http.get(getURI(HOST, dest), headers:headers);
+
+  }
+
+  static Uri getURI(String host, String dest) {
+
+    if (host.contains("/")) {
+      List<String> parts = split(host);
+      host = parts[0];
+      List<String> last = parts.getRange(1, parts.length).toList();
+      last.add(dest);
+      dest = joinAll(last);
+    }
+    return Uri.http(host, dest);
   }
 
 }

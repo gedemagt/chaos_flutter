@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
@@ -5,7 +8,6 @@ import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/providers/webdatabase.dart';
-import 'package:timer/webapi.dart';
 import 'package:timer/pages/creategympage.dart';
 
 class GymsPage extends StatefulWidget {
@@ -22,34 +24,61 @@ class GymsPage extends StatefulWidget {
 
 class _GymsPageState extends State<GymsPage> {
 
-  List<Gym> _gyms = new List<Gym>();
-  List<Gym> _searchGyms = List<Gym>();
+  List<Gym> _gyms;
+  List<Gym> _searchGyms;
   TextEditingController _searchCtrl = TextEditingController();
 
   Database prov = WebDatabase();
 
-  GlobalKey _scaffoldKey = GlobalKey();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+
+  StreamSubscription ss;
+
+  void setSearchGyms() {
+    setState(() {
+      _searchGyms = _gyms.where((g) {
+        return g.name.toLowerCase().startsWith(_searchCtrl.text.toLowerCase());
+        }).toList();
+    });
+  }
 
   @override
   void initState() {
-    super.initState();
-    WebAPI.downloadGyms().then((gyms) {
+    ss = prov.gymStream.stream.listen((data) {
       setState(() {
-        _gyms = gyms;
-        _gyms.forEach((g) => _searchGyms.add(g));
+        _gyms = data;
+        setSearchGyms();
       });
-
-    }).catchError((er) {
-      print("Error");
+    }, onError: (o, stacktrace) {
+      if (o is SocketException) {
+        setState(() {
+          if(_gyms == null) {
+            _gyms = _searchGyms = List<Gym>();
+          }
+        });
+        _scaffoldKey.currentState.showSnackBar(
+            SnackBar(content: Text("Internet connection error...")));
+      }
+      else {
+        throw o;
+      }
     });
-   }
 
+    prov.refreshGyms();
+
+    _searchCtrl.addListener(setSearchGyms);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if(ss != null) ss.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    List<Widget> ruteWidgets = List<Widget>();
-    ruteWidgets.add(
+    Widget header =
       ListTile(
         trailing: Icon(Icons.search),
       title: TextField(
@@ -57,41 +86,54 @@ class _GymsPageState extends State<GymsPage> {
         decoration: InputDecoration(
           hintText: "My favorite gym...",
         ),
-      ))
-    );
-    _searchCtrl.addListener(() {
-      _searchGyms.clear();
-      setState(() {
-        _gyms.forEach((g) {
-          if(g.name.toLowerCase().startsWith(_searchCtrl.text.toLowerCase())) {
-            _searchGyms.add(g);
-          }
-        });
-      });
-    });
+      ));
 
-    _searchGyms.forEach((gym) {
-      ruteWidgets.add(Card(
-        elevation: 0.1,
-        child: ListTile (
-          title: Text(
-            gym.name,
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-          trailing: Container(
-            child:Text("${gym.nrRutes}",
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 30)
-            )
-          ),
-          onTap: () {
-            StateManager().gym = gym;
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => RuteListPage())
-            );
-          },
-        )));
-    });
+    Widget body;
+    if(_searchGyms != null && _searchGyms.length ==0 ) {
+      body =  RefreshIndicator(
+          onRefresh: prov.refreshGyms,
+          child: ListView(
+            children: <Widget>[
+              NothingToShowWidget(text: "Nothing to see here...")
+            ],
+          )
+      );
+    }
+    else if(_searchGyms != null && _searchGyms.length > 0 ) {
+      body = RefreshIndicator(
+          onRefresh: prov.refreshGyms,
+          child: ListView.builder(
+              itemCount: _searchGyms.length,
+              itemBuilder: (context, idx) {
+                Gym g = _searchGyms[idx];
+                return Card(
+                    elevation: 0.1,
+                    child: ListTile (
+                      title: Text(
+                        g.name,
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Container(
+                          child:Text("${g.nrRutes}",
+                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 30)
+                          )
+                      ),
+                      onTap: () {
+                        StateManager().gym = g;
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => RuteListPage())
+                        );
+                      },
+                    )
+                );
+              })
+      );
+    }
+    else {
+      body = SizedBox.expand(child: Center(child: CircularProgressIndicator()));
+    }
+
 
     return Material(child:Scaffold(
       key:_scaffoldKey,
@@ -113,14 +155,12 @@ class _GymsPageState extends State<GymsPage> {
           },
           child: Icon(Icons.add),
         ),
-        body:RefreshIndicator(
-          onRefresh: Gym.refreshGyms,
-          child: _gyms.length == 0 ?
-            NothingToShowWidget(text: "No gyms...")
-            :
-          ListView(
-            children: ruteWidgets
-          )
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            header,
+            Expanded(child:body)
+          ]
         ),
       )
     );

@@ -16,7 +16,6 @@ class StateManager {
   Gym _gym = Gym.unknown;
   User _loggedInUser = User.unknown;
 
-
   get gym => _gym;
   get loggedInUser => _loggedInUser;
 
@@ -36,7 +35,7 @@ class StateManager {
     _loggedInUser = val;
   }
 
-  void init() async {
+  Future<void> init() async {
     print("Initializing StateManger()");
     SharedPreferences sp = await SharedPreferences.getInstance();
     String loggedInUUID = sp.getString("loggedIn");
@@ -49,7 +48,7 @@ class StateManager {
     try {
       _gym = Gym.fromJson(json.decode(rememberedGym));
     } catch(e) {
-      print("Error loading gym");
+      print("Error loading gym - defaulting to gym.unknown");
       print(e.toString());
       _gym = Gym.unknown;
     }

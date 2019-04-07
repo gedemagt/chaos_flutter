@@ -24,12 +24,6 @@ abstract class Database {
   Future<void> refreshRutes();
   Future<void> refreshUsers();
 
-  Future<void> refresh() async {
-    await refreshUsers();
-    await refreshGyms();
-    await refreshRutes();
-  }
-
   Map<String, Rute> ruteCache = Map();
   Map<String, User> userCache = Map();
   Map<String, Gym> gymCache = Map();
@@ -39,13 +33,14 @@ abstract class Database {
   }
 
   Gym getCachedGym(String uuid) {
+    if(!gymCache.containsKey(uuid)) return Gym.unknown;
     return gymCache[uuid];
   }
 
   User getCachedUser(String uuid) {
+    if(!userCache.containsKey(uuid)) return User.unknown;
     return userCache[uuid];
   }
-
 
   List<Rute> getRutes() {
     return ruteCache.values.toList();
@@ -59,9 +54,9 @@ abstract class Database {
     return gymCache.values.toList();
   }
 
-  StreamController<List<Rute>> ruteStream = StreamController();
-  StreamController<List<User>> userStream = StreamController();
-  StreamController<List<Gym>>  gymStream = StreamController();
+  StreamController<List<Rute>> ruteStream = StreamController.broadcast();
+  StreamController<List<User>> userStream = StreamController.broadcast();
+  StreamController<List<Gym>>  gymStream = StreamController.broadcast();
 
   void dispose() {
     ruteStream.close();

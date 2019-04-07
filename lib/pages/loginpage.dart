@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:timer/StateManager.dart';
+import 'package:timer/models/gym.dart';
+import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/registeruser.dart';
 import 'package:timer/webapi.dart';
@@ -67,7 +70,10 @@ class _LoginPageState extends State<LoginPage> {
             _isLoggingIn = true;
           });
           WebAPI.login(usernameController.text, passwordController.text).then((u) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteListPage()));
+            if(StateManager().gym == Gym.unknown)
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
+            else
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteListPage()));
           }, onError: (k) {
             print(k.toString());
             String text = "Wrong credentials";

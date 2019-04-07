@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:timer/models/user.dart';
+import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 
@@ -24,45 +25,17 @@ class Gym {
   Set<String> _sectors = Set<String>();
   get sectors => _sectors;
   List<String> _tags = List<String>();
-  static List<Function> _listeners = List<Function>();
-
-  static void addListener(Function f) {
-    _listeners.add(f);
-  }
-
 
   static Gym unknown = Gym._internal("unknown-gym", "Unknown Gym", DateTime(1), DateTime(1), Set<String>(), []);
-
-
-  static final Map<String, Gym> _cache = <String, Gym>{unknown.uuid: unknown};
 
 
   Gym._internal(this._uuid, this._name, this._created, this._edit, this._sectors, this._tags);
 
 
-
-  static Future<void> refreshGyms() async {
-
-    _listeners.forEach((f) => f());
-  }
-
-  static Gym fromName(String name) {
-    Gym result;
-    _cache.forEach((key, value) {if(value.name == name) result = value;});
-
-    return result;
-  }
-
-
-  static Gym fromUUID(String uuid) {
-    if(!_cache.containsKey(uuid)) return Gym.unknown;
-    return _cache[uuid];
-  }
-
   Gym.fromJson(Map map) {
     _uuid = map["uuid"];
     _name = map["name"];
-    _admin = User.fromUUID(map["admin"]);
+    _admin = WebDatabase().getCachedUser(map["admin"]);
 
     if(map["sectors"] != null) {
       if(map["sectors"] is List<dynamic>) {

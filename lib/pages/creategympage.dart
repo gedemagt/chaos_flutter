@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
+import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/pages/homepage.dart';
 
@@ -72,21 +73,18 @@ class _CreateGymPageState extends State<CreateGymPage> {
                     widget.gym.addSector(s);
                   }
                   widget.gym.name = _nameCtrl.text;
-                  Gym.refreshGyms().then((l) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => RuteListPage())
+                  );
+                }
+                else {
+                  WebDatabase().createGym(_nameCtrl.text, StateManager().loggedInUser, sectors: sectors.toList()).then((newGym) {
+                    StateManager().gym = newGym;
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => RuteListPage())
                     );
-                  });
-                }
-                else {
-                  WebAPI.createGym(_nameCtrl.text, sectors, StateManager().loggedInUser).then((i) {
-                    Gym.refreshGyms().then((l) {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => RuteListPage())
-                      );
-                    });
                   });
                 }
               },

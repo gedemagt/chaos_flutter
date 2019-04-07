@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
+import 'package:timer/providers/database.dart';
 import 'package:timer/providers/imageprovider.dart';
 import 'package:timer/models/point.dart';
-import 'package:timer/providers/provider.dart';
+import 'package:timer/providers/webdatabase.dart';
 import 'dart:async';
 import 'package:timer/util.dart';
 import 'package:timer/models/gym.dart';
@@ -26,7 +27,7 @@ class Rute {
   String _imageUUID;
 
   UUIDImageProvider prov = UUIDImageProvider();
-  Provider<Rute> _myProvider;
+  Database _myProvider;
 
   get image => _image;
   get name => _name;
@@ -47,7 +48,7 @@ class Rute {
 
   Rute._internal(this._uuid, this._name, this._created, this._edit, this._author, this._points, this._grade, this._myProvider);
 
-  Rute.create(String name, String sector, String imageUUID, Provider<Rute> provider)  {
+  Rute.create(String name, String sector, String imageUUID, Database provider)  {
 
     _myProvider = provider;
     _uuid = getUUID("rute");
@@ -75,11 +76,11 @@ class Rute {
   }
 
   void save() {
-    _myProvider.save(this);
+    _myProvider.saveRute(this);
   }
 
   void delete() {
-    _myProvider.delete(this);
+    _myProvider.deleteRute(this);
   }
 
   Future<Image> getImage() async {
@@ -99,18 +100,18 @@ class Rute {
     };
   }
 
-  Rute.fromJson(Map map, Provider<Rute> prov) {
+  Rute.fromJson(Map map, Database prov) {
 
     _myProvider = prov;
 
     _imageUUID = map["image"];
     _uuid = map["uuid"];
     _name = map["name"];
-    _gym = Gym.fromUUID(map["gym"]);
+    _gym = WebDatabase().getCachedGym(map["gym"]);
     _sector = map["sector"];
     _tag = map["tag"];
     _name = map["name"];
-    _author = User.fromUUID(map["author"]);
+    _author = WebDatabase().getCachedUser(map["author"]);
     try {
       _grade = int.parse(map["grade"]);
     } catch (e) {
