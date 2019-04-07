@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:async';
 import 'package:timer/models/user.dart';
 import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/util.dart';

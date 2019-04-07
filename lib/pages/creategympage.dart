@@ -3,7 +3,6 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/providers/webdatabase.dart';
-import 'package:timer/webapi.dart';
 import 'package:timer/pages/homepage.dart';
 
 class CreateGymPage extends StatefulWidget {

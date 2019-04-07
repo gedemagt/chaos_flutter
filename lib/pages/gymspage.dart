@@ -67,6 +67,7 @@ class _GymsPageState extends State<GymsPage> {
     prov.refreshGyms();
 
     _searchCtrl.addListener(setSearchGyms);
+    super.initState();
   }
 
   @override
