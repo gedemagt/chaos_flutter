@@ -85,6 +85,8 @@ class Rute {
   }
 
   void removePoint(RutePoint p) {
+    print("To remove " + p.toString());
+    print(_points);
     _points.remove(p);
     save();
   }

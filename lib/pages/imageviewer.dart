@@ -21,7 +21,7 @@ class ImageViewer extends StatefulWidget {
 }
 
 
-class PointWidget extends StatefulWidget {
+class PointWidget extends StatelessWidget {
 
   final Size _size;
   final RutePoint _point;
@@ -31,21 +31,9 @@ class PointWidget extends StatefulWidget {
   final Function onPanUpdate;
   final Function onPanStart;
   final Function onPanEnd;
+  final bool selected;
 
-  PointWidget(this._point, this._onSelected, this._size, this._canEdit, this._offset, {this.onPanUpdate,this.onPanStart, this.onPanEnd});
-
-  @override
-  State<StatefulWidget> createState() {
-    return _PointWidgetState(_point, _onSelected);
-  }
-
-}
-
-class _PointWidgetState extends State<PointWidget> {
-
-  Function(RutePoint p) onSelected;
-  RutePoint _point;
-  _PointWidgetState(this._point, this.onSelected);
+  PointWidget(this._point, this._onSelected, this._size, this._canEdit, this._offset, this.selected, {this.onPanUpdate,this.onPanStart, this.onPanEnd});
 
 
   Color typeToColor(Type type) {
@@ -58,33 +46,32 @@ class _PointWidgetState extends State<PointWidget> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: (_point.x - _point.size/2.0)*widget._size.width  + widget._offset.dx,
-      top:  (_point.y - _point.size/4.0)*widget._size.height + widget._offset.dy,
+      left: (_point.x - _point.size/2.0)*_size.width  + _offset.dx,
+      top:  (_point.y - _point.size/2.0)*_size.height + _offset.dy,
       child: GestureDetector(
         onPanEnd: (s) {
-          if(widget._canEdit && widget.onPanEnd != null)
-            widget.onPanEnd(s);
+          if(_canEdit && onPanEnd != null)
+            onPanEnd(s);
         },
           onPanStart: (s) {
-            if(widget._canEdit && widget.onPanStart != null)
-              widget.onPanStart(s);
+            if(_canEdit && onPanStart != null)
+              onPanStart(s);
           },
-            onPanUpdate: !widget._canEdit ? null : (details) {
-              setState(() {
-                _point.x += details.delta.dx / widget._size.width;
-                _point.y += details.delta.dy / widget._size.height;
+            onPanUpdate: !_canEdit ? null : (details) {
+                _point.x += details.delta.dx / _size.width;
+                _point.y += details.delta.dy / _size.height;
 
-                if(widget.onPanUpdate != null) widget.onPanUpdate(details);
-              });
+                if(onPanUpdate != null) onPanUpdate(details);
+
             },
-            onTapDown: !widget._canEdit ? null :  (details) {
-              if(onSelected != null) onSelected(_point);
+            onTapDown: !_canEdit ? null :  (details) {
+              if(_onSelected != null) _onSelected(_point);
             },
             child: Container(
-                height: _point.size*widget._size.shortestSide,
-                width: _point.size*widget._size.shortestSide,
+                height: _point.size*_size.shortestSide,
+                width: _point.size*_size.shortestSide,
                 child: CustomPaint(
-                  painter: CirclePainter(typeToColor(_point.type)),
+                  painter: CirclePainter(typeToColor(_point.type), selected),
                 )
             )
         )
@@ -146,7 +133,6 @@ class _ImageViewerState extends State<ImageViewer> {
           width = info.image.width.toDouble();
         });
       });
-
     }));
 
     points = _rute.points;
@@ -205,6 +191,7 @@ class _ImageViewerState extends State<ImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+
     List<Widget> barActions = List<Widget>();
     if (_canEdit) {
       barActions.add(IconButton(
@@ -263,12 +250,10 @@ class _ImageViewerState extends State<ImageViewer> {
       );
     }
 
-
-
     stuff.add(imageContainer);
     points.forEach(
       (p) => stuff.add(
-        PointWidget(p, _handleSelect, size, _editing, pvOffset)
+          PointWidget(p, _handleSelect, size, _editing, pvOffset, p == selected, onPanUpdate: (d) => setState((){}),)
       )
     );
 
@@ -284,73 +269,78 @@ class _ImageViewerState extends State<ImageViewer> {
     );
 
     if(_editing) {
-      Widget editRow = Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(Icons.delete),
-            color: Colors.blue,
-            onPressed: selected == null ? null : () {
-              setState(() {
-                _rute.removePoint(selected);
-              });
-            },
-          ),
-          MyVerticalDivider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-
-              Radio(
-                value: 1,
-                groupValue: _radioValue1,
-                onChanged: selected == null ? null : _handleRatioButton,
-                activeColor: Colors.blue,
-              ),
-              Radio(
-                value: 2,
-                groupValue: _radioValue1,
-                onChanged: selected == null ? null : _handleRatioButton,
-                activeColor: Colors.blue,
-              ),
-              Radio(
-                value: 3,
-                groupValue: _radioValue1,
-                onChanged: selected == null ? null : _handleRatioButton,
-                activeColor: Colors.blue,
-              )
-            ],
-          ),
-          MyVerticalDivider(),
-          FlatButton(
-            child: Text(numberToGrade(_rute.grade)),
-            onPressed: () {
-              setState(() {
-                _openAddEntryDialog();
-              });
-            },
-          ),
-          MyVerticalDivider(),
-          IconButton(
-            icon: Icon(Icons.keyboard_arrow_up),
-            color: Colors.blue,
-            onPressed: selected == null ? null : () {
-              setState(() {
-                //selected
-                selected.incrementSize();
-              });
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.keyboard_arrow_down),
-            color: Colors.blue,
-            onPressed: selected == null ? null : () {
-              setState(() {
-                selected.decrementSize();
-              });
-            },
-          )
-        ],
+      Widget editRow = Container(
+        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+        child:Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.delete),
+              color: Colors.blue,
+              onPressed: selected == null ? null : () {
+                setState(() {
+                  _rute.removePoint(selected);
+                  selected = null;
+                  points = _rute.points;
+                });
+              },
+            ),
+            MyVerticalDivider(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Radio(
+                  value: 1,
+                  groupValue: _radioValue1,
+                  onChanged: selected == null ? null : _handleRatioButton,
+                  activeColor: Colors.blue,
+                ),
+                Radio(
+                  value: 2,
+                  groupValue: _radioValue1,
+                  onChanged: selected == null ? null : _handleRatioButton,
+                  activeColor: Colors.blue,
+                ),
+                Radio(
+                  value: 3,
+                  groupValue: _radioValue1,
+                  onChanged: selected == null ? null : _handleRatioButton,
+                  activeColor: Colors.blue,
+                )
+              ],
+            ),
+            MyVerticalDivider(),
+            IconButton(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              icon: Text(numberToGrade(_rute.grade)),
+              onPressed: () {
+                setState(() {
+                  _openAddEntryDialog();
+                });
+              },
+            ),
+            MyVerticalDivider(),
+            IconButton(
+              icon: Icon(Icons.keyboard_arrow_up),
+              color: Colors.blue,
+              onPressed: selected == null ? null : () {
+                setState(() {
+                  //selected
+                  selected.incrementSize();
+                });
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.keyboard_arrow_down),
+              color: Colors.blue,
+              onPressed: selected == null ? null : () {
+                setState(() {
+                  selected.decrementSize();
+                });
+              },
+            )
+          ],
+        )
       );
 
 
@@ -373,8 +363,9 @@ class CirclePainter extends CustomPainter{
 
   Color lineColor = Colors.green;
   double width = 3;
+  bool fill;
 
-  CirclePainter(this.lineColor);
+  CirclePainter(this.lineColor, this.fill);
 
 
   @override
@@ -390,6 +381,13 @@ class CirclePainter extends CustomPainter{
         size.width/2,
         line
     );
+    if(fill) {
+      line.color = Colors.yellow;
+
+      canvas.drawCircle( Offset(size.width/2, size.width/2),
+          size.width/1.8,
+          line);
+    }
   }
 
   @override

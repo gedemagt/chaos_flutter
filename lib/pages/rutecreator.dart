@@ -53,7 +53,7 @@ class _RuteCreatorState extends State<RuteCreator> {
 
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
-    _image.copy(newPath);
+    _image.rename(newPath);
 
     return imageUUID;
   }
@@ -74,10 +74,29 @@ class _RuteCreatorState extends State<RuteCreator> {
             onPressed: () async {
               if (_formKey.currentState.validate()){
                 String imageUUID = await handleImage();
-                widget._prov.createRute(_nameCtrl.text, _sector, imageUUID).then((r) {
+                BuildContext c;
+                showDialog(barrierDismissible: false, context: context,
+                  builder: (context) {
+                    c = context;
+                    return Center(
+                      child: Container(
+                        child:Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            CircularProgressIndicator(),
+                            Text("Uploading rute...", style: TextStyle(inherit: false),)
+                          ],
+                        )
+                      )
+                    );
+                  }
+                );
+                widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image).then((r) {
+                  Navigator.of(c).pop();
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
                 },
                 onError: (e) {
+                  Navigator.of(c).pop();
                   String errorText = "An error occured!";
                   if(e is SocketException) errorText = "No internet connection";
                   else errorText = e.toString();

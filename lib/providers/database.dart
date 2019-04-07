@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
@@ -15,7 +16,7 @@ abstract class Database {
   Future<void> deleteRute(Rute rute);
   Future<Rute> saveRute(Rute rute);
   Future<Rute> getRute(String uuid);
-  Future<Rute> createRute(String name, String sector, String imageUUID);
+  Future<Rute> createRute(String name, String sector, String imageUUID, File image);
 
   Future<void> deleteGym(Gym gym);
   Future<Gym> saveGym(Gym gym);

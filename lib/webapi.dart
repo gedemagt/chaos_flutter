@@ -51,17 +51,17 @@ class WebAPI {
 
   static Future<void> init() async {
   
-    print("Initializing WebAPI");
+    print("[WebAPI] Initializing");
 
     if(_hasBeenInitialized) {
-      print("Trying to reinitialize WebAPI");
+      print("[WebAPI] Trying to reinitialize");
       return;
     }
     SharedPreferences sp  = await SharedPreferences.getInstance();
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
     _hasBeenInitialized = true;
-    print("WebAPI cookie: $cookie");
+    print("[WebAPI] cookie: $cookie");
   }
 
 
@@ -71,7 +71,7 @@ class WebAPI {
         body: {"username": username, "password": password}
     );
 
-    print("WebAPI: Logging in user '$username'");
+    print("[WebAPI] Logging in user '$username'");
 
     String rawCookie = r.headers['set-cookie'];
     if (rawCookie != null) {
@@ -97,7 +97,7 @@ class WebAPI {
     Response r = await _get("get_user/$uuid");
     Map m = json.decode(r.body);
     User u = User.fromJson(m.values.first);
-    print("WebAPI: Downloading user $uuid: '$u'");
+    print("[WebAPI] Downloading user $uuid: '$u'");
     return u;
 
   }
@@ -109,7 +109,7 @@ class WebAPI {
     for(var entry in j.entries) {
       users.add(User.fromJson(entry.value));
     }
-    print("WebAPI: Downloading users '${users.length} ($gym)'");
+    print("[WebAPI] Downloading users '${users.length} ($gym)'");
     return users;
   }
 
@@ -120,7 +120,7 @@ class WebAPI {
     for(var entry in j.entries) {
       gyms.add(await Gym.fromJson(entry.value));
     }
-    print("WebAPI: Downloading gyms '${gyms.length}'");
+    print("[WebAPI] Downloading gyms '${gyms.length}'");
     return gyms;
   }
 
@@ -129,12 +129,12 @@ class WebAPI {
     var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
     gym = await Gym.fromJson(j[uuid]);
-    print("WebAPI: Downloading gym $uuid: '$gym'");
+    print("[WebAPI] Downloading gym $uuid: '$gym'");
     return gym;
   }
 
   static Image downloadImage(String imageUUID) {
-    print("WebAPI: Downloading image '$imageUUID'");
+    print("[WebAPI] Downloading image '$imageUUID'");
     return Image.network("http://" + HOST + "/download/$imageUUID", headers: {"cookie": _cookie});
   }
 
@@ -145,19 +145,23 @@ class WebAPI {
         String newPath = join(d.path, "$imageUUID.jpg");
         File f = new File(newPath);
         image = f;
-        print("Found image '$newPath' locally");
+        print("[Found image '$newPath' locally");
+      }
+      else {
+        print("Using supplied file: ${image.path}");
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
-      print(getURI(HOST, "/add_image/$imageUUID"));
-      var req = http.MultipartRequest("POST", getURI(HOST, "add_image/$imageUUID"));
+      MultipartRequest req = http.MultipartRequest("POST", getURI(HOST, "add_image/$imageUUID"));
       req.headers["cookie"] = _cookie;
       var multipartFile = new http.MultipartFile('data', stream, await image.length(),
           filename: basename(image.path));
       req.files.add(multipartFile);
+
+
       var response = await req.send();
       handleRequest(response);
-      print("WebAPI: Uploading image '$imageUUID'");
+      print("[WebAPI] Uploading image '$imageUUID'");
   }
 
 
@@ -180,7 +184,7 @@ class WebAPI {
         rutes.add(await Rute.fromJson(val, WebDatabase()));
       }
     }
-    print("WebAPI: Downloading rutes ${rutes.length} (filter=$gym)");
+    print("[WebAPI] Downloading rutes ${rutes.length} (filter=$gym)");
     return rutes;
   }
 

@@ -140,11 +140,11 @@ class _RuteListPageState extends State<RuteListPage> {
             },
             items: [
               BottomNavigationBarItem(
-                title: Text("Community"),
+                title: Text("All"),
                 icon: Icon(Icons.people)
               ),
               BottomNavigationBarItem(
-                title: Text("Mine"),
+                title: Text("My"),
                 icon: Icon(Icons.person)
               )
             ],

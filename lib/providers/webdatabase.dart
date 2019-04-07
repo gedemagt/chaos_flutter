@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
@@ -24,8 +26,8 @@ class WebDatabase extends Database {
   }
 
   @override
-  Future<Rute> createRute(String name, String sector, String imageUUID) async {
-    await WebAPI.uploadImage(imageUUID);
+  Future<Rute> createRute(String name, String sector, String imageUUID, File image) async {
+    await WebAPI.uploadImage(imageUUID, image: image);
     String uuid = getUUID("rute");
     await WebAPI.createRute(uuid, name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
     await refreshRutes();

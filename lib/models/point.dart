@@ -5,7 +5,7 @@ enum Type {
 class RutePoint {
 
 
-  double _size = 0.05;
+  double _size = 0.1;
   double _x = 0;
   double _y = 0;
   Type _type = Type.NORMAL;
@@ -58,5 +58,9 @@ class RutePoint {
     return "Point<[$x,$y] - $size]";
   }
 
+  @override
+  bool operator ==(other) {
+    return _x == other.x && y == other.y;
+  }
 
 }
