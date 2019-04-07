@@ -13,9 +13,9 @@ class ChaosDrawer extends StatelessWidget {
 
   ChaosDrawer({this.isRutesSelected = true, this.isGymSelected = false});
 
+
   @override
   Widget build(BuildContext context) {
-    print(canEdit(StateManager().gym.admin));
     return Drawer(
       child: ListView(
         children: <Widget>[
@@ -30,7 +30,8 @@ class ChaosDrawer extends StatelessWidget {
               )
           ),
           ListTile(
-            title: Text(StateManager().gym.name),
+            title: Text("Switch gym"),
+            subtitle: Text(StateManager().gym.name),
             leading: Icon(Icons.home),
             trailing: canEdit(StateManager().gym.admin) ?
             IconButton(

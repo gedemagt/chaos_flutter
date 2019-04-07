@@ -25,19 +25,9 @@ class WebDatabase extends Database {
 
   @override
   Future<Rute> createRute(String name, String sector, String imageUUID) async {
-    int r = await WebAPI.uploadImage(imageUUID);
-    if(r == 413) {
-      print("Problems!");
-      throw Exception("File too big");
-    }
-    if(r >= 500) {
-      throw Exception("Server error: $r");
-    }
-    if(r >= 400) {
-      throw Exception("Authentication error: $r");
-    }
-
-    String uuid = await WebAPI.createRute(getUUID("rute"), name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
+    await WebAPI.uploadImage(imageUUID);
+    String uuid = getUUID("rute");
+    await WebAPI.createRute(uuid, name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
     await refreshRutes();
     return getRute(uuid);
   }
@@ -64,7 +54,7 @@ class WebDatabase extends Database {
   @override
   Future<Gym> getGym(String uuid) async {
     if(gymCache != null && gymCache.length==0) {
-      print("Gym cache seems empty - refreshing...");
+      print("[WebDatabase] Gym cache seems empty - refreshing...");
       await refreshGyms();
     }
     Gym cached = gymCache[uuid];
@@ -82,15 +72,24 @@ class WebDatabase extends Database {
 
   @override
   Future<User> getUser(String uuid) async {
+    if(uuid == User.unknown.uuid) return User.unknown;
     if(userCache != null && userCache.length==0) {
-      print("User cache seems empty - refreshing...");
+      print("[WebDatabase] User cache seems empty - refreshing...");
       await refreshUsers();
     }
-    User cached = userCache[uuid];
-    if(cached == null) {
-      return WebAPI.getUser(uuid);
+
+    User result = User.unknown;
+    if(!userCache.containsKey(uuid)) {
+      print("[WebDatabase] User $uuid not in cache. We try to download..");
+      result = await WebAPI.getUser(uuid);
+      if(result != User.unknown) userCache[uuid] = result;
     }
-    return User.unknown;
+    else {
+      result = userCache[uuid];
+    }
+
+
+    return result;
   }
 
   @override

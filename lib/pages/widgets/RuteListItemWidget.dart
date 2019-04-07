@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
@@ -35,7 +36,7 @@ class RuteListItemWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(_rute.author.name),
-                  Text(_rute.date.toString().substring(0, 10))
+                  Text(DateFormat("dd-MM-yyyy").format(_rute.date))
                 ],
               )
             ],

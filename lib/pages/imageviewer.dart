@@ -126,14 +126,11 @@ class _ImageViewerState extends State<ImageViewer> {
   void initState() {
     super.initState();
 
-    print("Wat?");
-    print(widget._rute);
-    print(widget._rute.author);
+
     _canEdit = canEdit(widget._rute.author);
 
     _rute = widget._rute;
     _image = null;
-
 
     widget._rute.getImage().then((image) => setState(() {
       _image = image;
@@ -156,6 +153,8 @@ class _ImageViewerState extends State<ImageViewer> {
     crtl = PhotoViewController();
 
     crtl.addListener(updateOffsetAndScale);
+
+    print("[ImageViewer] Showing rute $_rute");
 
   }
 

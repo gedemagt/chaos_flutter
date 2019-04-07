@@ -75,7 +75,6 @@ class _RuteCreatorState extends State<RuteCreator> {
               if (_formKey.currentState.validate()){
                 String imageUUID = await handleImage();
                 widget._prov.createRute(_nameCtrl.text, _sector, imageUUID).then((r) {
-                  print("Success!");
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
                 },
                 onError: (e) {

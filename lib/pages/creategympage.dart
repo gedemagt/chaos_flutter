@@ -23,15 +23,7 @@ class _CreateGymPageState extends State<CreateGymPage> {
   Set<String> sectors = Set<String>();
 
   @override
-  void initState() {
-    super.initState();
-
-   }
-
-
-  @override
   Widget build(BuildContext context) {
-
 
     if(widget.gym != null) {
       sectors = widget.gym.sectors;

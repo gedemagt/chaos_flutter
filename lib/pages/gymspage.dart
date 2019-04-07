@@ -114,10 +114,14 @@ class _GymsPageState extends State<GymsPage> {
                         g.name,
                         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                       ),
-                      trailing: Container(
-                          child:Text("${g.nrRutes}",
-                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 30)
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text("Rutes    ${g.nrRutes}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text("Sectors ${g.sectors.length}",
                           )
+                        ],
                       ),
                       onTap: () {
                         StateManager().gym = g;

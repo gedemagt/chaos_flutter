@@ -16,6 +16,7 @@ import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:timer/util.dart';
+import 'package:timer/pages/exceptions.dart';
 
 
 class WebAPI {
@@ -29,14 +30,38 @@ class WebAPI {
     return _cookie != null && _cookie != "";
   }
 
+  static void handleRequest(BaseResponse r) {
+    Exception e;
+    if(r.statusCode >= 500)
+      e = ServerException("Server error: ${r.statusCode}");
+    else if(r.statusCode == 401 || r.statusCode == 403)
+      e = AuthenticationException("Unauthorized: ${r.statusCode}");
+    else if(r.statusCode == 413 )
+      e = InvalidContentException("Content to large: ${r.statusCode}");
+    else if(r.statusCode >= 400)
+      e = InvalidContentException("Bad request: ${r.statusCode}");
+
+    if(e != null) {
+      print("Throwing exception from request '${r.request.url}' based on status code ${r.statusCode}");
+      throw e;
+    }
+  }
+
   static bool _hasBeenInitialized = false;
 
   static Future<void> init() async {
-    if(_hasBeenInitialized) return;
+  
+    print("Initializing WebAPI");
+
+    if(_hasBeenInitialized) {
+      print("Trying to reinitialize WebAPI");
+      return;
+    }
     SharedPreferences sp  = await SharedPreferences.getInstance();
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
     _hasBeenInitialized = true;
+    print("WebAPI cookie: $cookie");
   }
 
 
@@ -46,12 +71,15 @@ class WebAPI {
         body: {"username": username, "password": password}
     );
 
+    print("WebAPI: Logging in user '$username'");
+
     String rawCookie = r.headers['set-cookie'];
     if (rawCookie != null) {
       int index = rawCookie.indexOf(';');
       String cookie =
       (index == -1) ? rawCookie : rawCookie.substring(0, index);
       _cookie = cookie;
+      print("WebAPI: new session cookie: $cookie");
     }
 
     result = await getUser(r.body);
@@ -67,25 +95,22 @@ class WebAPI {
 
   static Future<User> getUser(String uuid) async {
     Response r = await _get("get_user/$uuid");
-    if(r.statusCode > 299) {
-      throw Exception("getUser: Unauthorized");
-    }
-    else {
-      Map m = json.decode(r.body);
-      return User.fromJson(m.values.first);
-    }
+    Map m = json.decode(r.body);
+    User u = User.fromJson(m.values.first);
+    print("WebAPI: Downloading user $uuid: '$u'");
+    return u;
+
   }
 
   static Future <List<User>> downloadUsers(Gym gym) async {
     List<User> users = List<User>();
     var result = await _get("get_users");
     Map j = json.decode(result.body);
-    j.forEach((key, val) {
-      User u = User.fromJson(val);
-      users.add(u);
-    });
+    for(var entry in j.entries) {
+      users.add(User.fromJson(entry.value));
+    }
+    print("WebAPI: Downloading users '${users.length} ($gym)'");
     return users;
-
   }
 
   static Future<List<Gym>> downloadGyms() async {
@@ -95,6 +120,7 @@ class WebAPI {
     for(var entry in j.entries) {
       gyms.add(await Gym.fromJson(entry.value));
     }
+    print("WebAPI: Downloading gyms '${gyms.length}'");
     return gyms;
   }
 
@@ -103,21 +129,23 @@ class WebAPI {
     var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
     gym = await Gym.fromJson(j[uuid]);
+    print("WebAPI: Downloading gym $uuid: '$gym'");
     return gym;
   }
 
   static Image downloadImage(String imageUUID) {
+    print("WebAPI: Downloading image '$imageUUID'");
     return Image.network("http://" + HOST + "/download/$imageUUID", headers: {"cookie": _cookie});
   }
 
-  static Future<int> uploadImage(String imageUUID, {File image}) async {
+  static Future<void> uploadImage(String imageUUID, {File image}) async {
 
       if(image == null) {
         final d = await getApplicationDocumentsDirectory();
         String newPath = join(d.path, "$imageUUID.jpg");
         File f = new File(newPath);
         image = f;
-        print("Found file locally");
+        print("Found image '$newPath' locally");
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
@@ -128,8 +156,8 @@ class WebAPI {
           filename: basename(image.path));
       req.files.add(multipartFile);
       var response = await req.send();
-      print("OMG ${response.statusCode}");
-      return Future.value(response.statusCode);
+      handleRequest(response);
+      print("WebAPI: Uploading image '$imageUUID'");
   }
 
 
@@ -152,13 +180,14 @@ class WebAPI {
         rutes.add(await Rute.fromJson(val, WebDatabase()));
       }
     }
+    print("WebAPI: Downloading rutes ${rutes.length} (filter=$gym)");
     return rutes;
   }
 
   static Future<String> createUser(String username, String email, String password) async {
     String uuid = getUUID("user");
 
-    Response r = await _postJson("add_user",
+    await _postJson("add_user",
       body: {
         "username": username,
         "password": password,
@@ -166,15 +195,12 @@ class WebAPI {
         "uuid": uuid
       }
     );
-
-    if(r.statusCode > 200)
-      return Future.error(r.statusCode);
-    else return uuid;
+    print("[WebAPI] Creating user '$username ($uuid - $email)'");
   }
 
-  static Future<String> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {
+  static Future<void> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {
     DateTime now = DateTime.now();
-    Response r = await _postJson("add_rute",
+    await _postJson("add_rute",
       body: {
         "uuid": uuid,
         "name": name,
@@ -188,15 +214,13 @@ class WebAPI {
         "edit": format(now)
       }
     );
-
-    if(r.statusCode > 200)
-      return Future.error(r.statusCode);
-    else return uuid;
+    print("[WebAPI] Creating rute '$name ($uuid - $imageUUID - $author - $g)'");
+    return uuid;
   }
 
-  static Future<int> saveRute(Rute t) async {
+  static Future<void> saveRute(Rute t) async {
     DateTime now = DateTime.now();
-    Response r = await _postJson("save_rute",
+    await _postJson("save_rute",
       body: {
         "uuid": t.uuid,
         "name": t.name,
@@ -208,15 +232,12 @@ class WebAPI {
         "edit": format(now)
       }
     );
-
-    if(r.statusCode > 200)
-      return Future.error(r.statusCode);
-    else return r.statusCode;
+    print("[WebAPI] Saving rute '$t'");
   }
 
-  static Future<int> saveGym(Gym g) async {
+  static Future<void> saveGym(Gym g) async {
     DateTime now = DateTime.now();
-    Response r = await _postJson("save_gym",
+    await _postJson("save_gym",
       body: {
         "uuid": g.uuid,
         "name": g.name,
@@ -225,40 +246,25 @@ class WebAPI {
         "edit": format(now)
       }
     );
-
-    if(r.statusCode > 200)
-      return Future.error(r.statusCode);
-    else return r.statusCode;
+    print("[WebAPI] Saving gym '$g'");
   }
 
-  static Future<int> deleteRute(Rute t) async {
-    Response r = await _get("delete/" + t.uuid);
-
-    if(r.statusCode > 299)
-      return Future.error(r.statusCode);
-    else return r.statusCode;
-
+  static Future<void> deleteRute(Rute t) async {
+    await _get("delete/" + t.uuid);
+    print("[WebAPI] Deleting rute $t");
   }
 
-  static Future<int> logout() async {
-
+  static Future<void> logout() async {
     StateManager().loggedInUser = null;
     _cookie = "";
-    Response r = await _get("logout");
-
-
-    if(r.statusCode > 299)
-      return Future.error(r.statusCode);
-    else {
-      return r.statusCode;
-    }
-
+    await _get("logout");
+    print("[WebAPI] Logging out");
   }
 
   static Future<String> createGym(String text, Set<String> sectors, User admin) async {
     String uuid = getUUID("gym");
 
-    Response r = await _postJson("add_gym",
+    await _postJson("add_gym",
       body: {
         "uuid": uuid,
         "name": text,
@@ -268,9 +274,9 @@ class WebAPI {
       }
     );
 
-    if(r.statusCode > 299)
-      return Future.error(r.statusCode);
-    else return uuid;
+    print("[WebAPI] Creating gym '$text ($uuid)'");
+
+    return uuid;
   }
 
 
@@ -279,10 +285,11 @@ class WebAPI {
     if(headers == null)
       headers = Map<String, String>();
 
-
     headers["cookie"] = _cookie;
 
-    return http.post(getURI(HOST, dest), headers:headers, body:body, encoding: encoding);
+    Response r = await http.post(getURI(HOST, dest), headers:headers, body:body, encoding: encoding);
+    handleRequest(r);
+    return r;
 
   }
 
@@ -298,7 +305,6 @@ class WebAPI {
     headers["cookie"] = _cookie;
 
     return _post(dest, headers:headers, body:payload, encoding: encoding);
-
   }
 
 
@@ -308,8 +314,9 @@ class WebAPI {
 
     headers["cookie"] = _cookie;
 
-
-     return http.get(getURI(HOST, dest), headers:headers);
+    Response r = await http.get(getURI(HOST, dest), headers:headers);
+    handleRequest(r);
+    return r;
 
   }
 
