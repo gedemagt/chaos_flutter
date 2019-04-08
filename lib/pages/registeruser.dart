@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:timer/pages/gymspage.dart';
-import 'package:timer/pages/homepage.dart';
 import 'package:timer/webapi.dart';
 
 class RegisterUserPage extends StatefulWidget {

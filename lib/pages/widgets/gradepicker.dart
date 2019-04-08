@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:timer/util.dart';
-import 'package:flutter_range_slider/flutter_range_slider.dart';
 
 // move the dialog into it's own stateful widget.
 // It's completely independent from your page

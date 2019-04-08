@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:simple_logger/simple_logger.dart';
 import 'package:timer/models/gym.dart';
+import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +16,9 @@ class StateManager {
 
   Gym _gym = Gym.unknown;
   User _loggedInUser = User.unknown;
+  Rute _lastRute;
+  get lastRute => _lastRute;
+  set lastRute(val) => _lastRute = val;
 
   get gym => _gym;
   get loggedInUser => _loggedInUser;

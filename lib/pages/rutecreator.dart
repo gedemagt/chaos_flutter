@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:timer/StateManager.dart';
+import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
@@ -14,8 +15,9 @@ class RuteCreator extends StatefulWidget {
 
   ///
   final Database _prov;
+  final String _initialSector;
 
-  RuteCreator(this._prov);
+  RuteCreator(this._prov, this._initialSector);
 
   @override
   _RuteCreatorState createState() => _RuteCreatorState();
@@ -32,6 +34,16 @@ class _RuteCreatorState extends State<RuteCreator> {
 
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if(widget._initialSector != null && StateManager().gym.sectors.contains(widget._initialSector)) {
+      _sector = widget._initialSector;
+    }
+
+  }
 
   Future getImageCamera() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera, maxHeight: MAX_SIZE, maxWidth: MAX_SIZE);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
@@ -41,18 +42,15 @@ class _RuteViewerState extends State<RuteViewer> {
   List<Rute> rutes;
   ImageViewer iv;
 
-  PageController controller = PageController();
-  var currentPageValue = 0.0;
+  PageController controller;
   ScrollPhysics scrollPhysics = ScrollPhysics();
 
   @override
   void initState() {
     rutes = widget._r;
-    currentPageValue = widget.startIndex.toDouble();
+    controller = PageController(initialPage: widget.startIndex);
     controller.addListener(() {
-      setState(() {
-        currentPageValue = controller.page;
-      });
+      StateManager().lastRute = rutes[controller.page.floor()];
     });
     super.initState();
   }
@@ -61,11 +59,9 @@ class _RuteViewerState extends State<RuteViewer> {
     return ImageViewer(rutes[pos],
       startEdit: () => setState(() {
         scrollPhysics = NeverScrollableScrollPhysics();
-        print("Mjello");
       }),
       endEdit: () => setState(() {
         scrollPhysics = null;
-        print("aaand off");
       })
     );
   }
@@ -78,6 +74,7 @@ class _RuteViewerState extends State<RuteViewer> {
       controller: controller,
       itemCount: rutes.length,
       itemBuilder: (context, pos) {
+        print(pos);
         return getImageViewer(pos);
       }
     );

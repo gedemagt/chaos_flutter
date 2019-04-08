@@ -200,6 +200,7 @@ class WebAPI {
       }
     );
     print("[WebAPI] Creating user '$username ($uuid - $email)'");
+    return uuid;
   }
 
   static Future<void> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {

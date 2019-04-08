@@ -93,7 +93,7 @@ class _RuteListPageState extends State<RuteListPage> {
             return RuteListItemWidget(_filteredRutes[idx], (r) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => RuteViewer(_filteredRutes, idx))
+                MaterialPageRoute(builder: (context) => RuteViewer(_filteredRutes, _filteredRutes.indexOf(r)))
               );
             });
         })
@@ -131,7 +131,7 @@ class _RuteListPageState extends State<RuteListPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RuteCreator(prov))
+              MaterialPageRoute(builder: (context) => RuteCreator(prov, StateManager().lastRute != null ? StateManager().lastRute.sector : null))
             );
           }),
           body: body,

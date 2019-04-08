@@ -36,9 +36,9 @@ bool canEdit(User u) {
 var colormap = {
   "grå": Colors.grey,
   "lilla": Colors.deepPurpleAccent,
-  "gul": Colors.yellowAccent,
+  "gul": Colors.yellow[600],
   "sort": Colors.black54,
-  "grøn": Colors.greenAccent,
+  "grøn": Colors.green[800],
   "rød": Colors.redAccent
 };
 
@@ -48,6 +48,7 @@ Color getColor(String s) {
   colormap.forEach((key,val) {
     if(s.contains(key)) result = val;
   });
+
   return result;
 }
 
