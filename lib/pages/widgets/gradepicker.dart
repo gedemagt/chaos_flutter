@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:timer/util.dart';
+import 'package:flutter_range_slider/flutter_range_slider.dart';
 
 // move the dialog into it's own stateful widget.
 // It's completely independent from your page
 // this is good practice
-class GradePickerDialog extends StatefulWidget {
+  class GradePickerDialog extends StatefulWidget {
   /// initial selection for the slider
   final int grade;
 
@@ -27,8 +28,16 @@ class _GradePickerDialogState extends State<GradePickerDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Choose grade'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+        Text('Choose grade'),
+        CircleAvatar(
+          child: Text(numberToGrade(_grade)),
+        ),
+      ],),
       content: Column (
+        mainAxisSize: MainAxisSize.min,
         children: [
           Slider(
             value: _grade.toDouble(),
@@ -41,9 +50,7 @@ class _GradePickerDialogState extends State<GradePickerDialog> {
               });
             },
           ),
-          Text(
-            numberToGrade(_grade)
-          )
+
         ]
       ),
       actions: <Widget>[

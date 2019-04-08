@@ -37,7 +37,7 @@ class _FilterPageState extends State<FilterPage> {
     Widget w = RangeSlider(
       min:0,
       max:20,
-      showValueIndicator: true,
+      //showValueIndicator: true,
       divisions: 20,
       lowerValue: _min,
       upperValue: _max,
