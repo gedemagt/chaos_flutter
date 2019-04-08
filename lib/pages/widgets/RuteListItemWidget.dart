@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timer/models/rute.dart';
-import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/util.dart';
 
 class RuteListItemWidget extends StatelessWidget {
 
+  final Function onTap;
   final Rute _rute;
 
-  RuteListItemWidget(this._rute);
+  RuteListItemWidget(this._rute, this.onTap);
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +55,7 @@ class RuteListItemWidget extends StatelessWidget {
         ),
         leading: SectorIndicator(_rute.sector),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => RuteViewer(_rute))
-          );
+          onTap(_rute);
         },
       )
     );

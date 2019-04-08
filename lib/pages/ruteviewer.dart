@@ -4,11 +4,25 @@ import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
 
 
-class RuteViewer extends StatelessWidget {
+class RuteViewer extends StatefulWidget {
 
-  final Rute _r;
+  final List<Rute> _r;
+  final int startIndex;
 
-  RuteViewer(this._r);
+  RuteViewer(this._r, this.startIndex);
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _RuteViewerState();
+  }
+
+}
+
+class _RuteViewerState extends State<RuteViewer> {
+
+
+
 
 //  final List<Comment> comments = [
 //    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",    "BallClamps",
@@ -24,11 +38,51 @@ class RuteViewer extends StatelessWidget {
 //    ),
 //  ];
 
+  List<Rute> rutes;
+  ImageViewer iv;
+
+  PageController controller = PageController();
+  var currentPageValue = 0.0;
+  ScrollPhysics scrollPhysics = ScrollPhysics();
+
+  @override
+  void initState() {
+    rutes = widget._r;
+    currentPageValue = widget.startIndex.toDouble();
+    controller.addListener(() {
+      setState(() {
+        currentPageValue = controller.page;
+      });
+    });
+    super.initState();
+  }
+
+  ImageViewer getImageViewer(int pos) {
+    return ImageViewer(rutes[pos],
+      startEdit: () => setState(() {
+        scrollPhysics = NeverScrollableScrollPhysics();
+        print("Mjello");
+      }),
+      endEdit: () => setState(() {
+        scrollPhysics = null;
+        print("aaand off");
+      })
+    );
+  }
 
 
   @override
   Widget build(BuildContext context) {
-    return ImageViewer(_r);
+    return PageView.builder(
+      physics: scrollPhysics,
+      controller: controller,
+      itemCount: rutes.length,
+      itemBuilder: (context, pos) {
+        return getImageViewer(pos);
+      }
+    );
+
+
 //    List<Widget> children = List();
 //
 //
@@ -138,4 +192,21 @@ class CommentWidget extends StatelessWidget {
     );
   }
 
+}
+
+class CustomScrollPhysics extends ScrollPhysics {
+  CustomScrollPhysics(this.disabled, {ScrollPhysics parent}) : super(parent: parent);
+
+  final bool disabled;
+
+  @override
+  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
+    return CustomScrollPhysics(disabled, parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    if(disabled) return 0.0;
+    else return super.applyBoundaryConditions(position, value);
+  }
 }

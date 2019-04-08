@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/filter.dart';
 import 'package:timer/pages/filterpage.dart';
+import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/ChaosDrawer.dart';
 import 'package:timer/pages/widgets/RuteListItemWidget.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
@@ -89,7 +90,12 @@ class _RuteListPageState extends State<RuteListPage> {
         child: ListView.builder(
           itemCount: _filteredRutes.length,
           itemBuilder: (context, idx) {
-            return RuteListItemWidget(_filteredRutes[idx]);
+            return RuteListItemWidget(_filteredRutes[idx], (r) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RuteViewer(_filteredRutes, idx))
+              );
+            });
         })
       );
     }

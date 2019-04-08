@@ -10,8 +10,9 @@ import 'package:photo_view/photo_view.dart';
 class ImageViewer extends StatefulWidget {
 
   final Rute _rute;
+  final Function startEdit, endEdit;
 
-  ImageViewer(this._rute);
+  ImageViewer(this._rute, {this.startEdit, this.endEdit});
 
   @override
   State<StatefulWidget> createState() {
@@ -218,6 +219,12 @@ class _ImageViewerState extends State<ImageViewer> {
             updateOffsetAndScale();
           });
           setState(() => _editing = !_editing);
+          if(_editing) {
+            if (widget.startEdit != null) widget.startEdit();
+          }
+          else {
+            if(widget.endEdit != null)widget.endEdit();
+          }
         }));
   }
 
