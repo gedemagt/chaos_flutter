@@ -3,7 +3,7 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
-
+import 'package:timer/webapi.dart';
 
 class RuteViewer extends StatefulWidget {
 
@@ -44,6 +44,7 @@ class _RuteViewerState extends State<RuteViewer> {
 
   PageController controller;
   ScrollPhysics scrollPhysics = ScrollPhysics();
+  bool showBottom = true;
 
   @override
   void initState() {
@@ -59,9 +60,11 @@ class _RuteViewerState extends State<RuteViewer> {
     return ImageViewer(rutes[pos],
       startEdit: () => setState(() {
         scrollPhysics = NeverScrollableScrollPhysics();
+        showBottom = false;
       }),
       endEdit: () => setState(() {
         scrollPhysics = null;
+        showBottom = true;
       })
     );
   }
@@ -69,13 +72,64 @@ class _RuteViewerState extends State<RuteViewer> {
 
   @override
   Widget build(BuildContext context) {
+
+
+
     return PageView.builder(
       physics: scrollPhysics,
       controller: controller,
       itemCount: rutes.length,
       itemBuilder: (context, pos) {
-        print(pos);
-        return getImageViewer(pos);
+
+        Widget completeWidget;
+        List<Complete> completes = rutes[pos].completes;
+        Complete c = completes.firstWhere((complete) => StateManager().loggedInUser == complete.u, orElse: () => null);
+
+        if(c != null) {
+          completeWidget = Padding(padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
+            child:Column(
+              children: <Widget>[
+                Text("Completed on", style: TextStyle(color:Colors.blue, inherit: false)),
+                Text(DateFormat("dd-MM-yyyy").format(c.date), style: TextStyle(color:Colors.blue, inherit: false))
+              ],
+            )
+          );
+        }
+        else {
+          completeWidget = FlatButton(
+            child: Text("Complete"),
+            onPressed: (){
+              setState(() {
+                rutes[pos].complete(StateManager().loggedInUser, 2);
+              });
+            },
+            color: Theme.of(context).primaryColor,
+            textColor: Colors.white,
+          );
+        }
+
+        print(rutes[pos].completes);
+        List<Widget> widgets = [
+          Expanded(child:getImageViewer(pos))
+        ];
+        if(showBottom) widgets.add(
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              color: Colors.white,
+              child:Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+
+              completeWidget
+            ]
+          ))
+        );
+
+        return Column(
+          children: widgets
+        );
+
+
       }
     );
 
@@ -189,21 +243,4 @@ class CommentWidget extends StatelessWidget {
     );
   }
 
-}
-
-class CustomScrollPhysics extends ScrollPhysics {
-  CustomScrollPhysics(this.disabled, {ScrollPhysics parent}) : super(parent: parent);
-
-  final bool disabled;
-
-  @override
-  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics(disabled, parent: buildParent(ancestor));
-  }
-
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if(disabled) return 0.0;
-    else return super.applyBoundaryConditions(position, value);
-  }
 }

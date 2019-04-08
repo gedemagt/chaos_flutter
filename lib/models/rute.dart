@@ -12,6 +12,14 @@ import 'package:timer/models/gym.dart';
 
 import 'package:timer/models/user.dart';
 
+class Complete {
+  final User u;
+  final int retries;
+  final DateTime date;
+
+  Complete(this.u, this.retries, this.date);
+}
+
 class Rute {
   String _name;
   String _uuid;
@@ -24,6 +32,8 @@ class Rute {
   String _sector;
   String _imageUUID;
   Gym _gym;
+
+  List<Complete> _completes = List();
 
   String _tag;
   Image _image;
@@ -42,6 +52,7 @@ class Rute {
   get date => _created;
   get edit => _edit;
   get imageUUID => _imageUUID;
+  get completes => _completes;
 
   set grade(val) {
     _grade = val;
@@ -60,7 +71,8 @@ class Rute {
       this._sector,
       this._imageUUID,
       this._gym,
-      this._tag);
+      this._tag,
+      this._completes);
 
   Rute.create(String name, String sector, String imageUUID, Database provider)  {
 
@@ -76,6 +88,11 @@ class Rute {
     _name = name;
     _sector = sector;
     _tag = "";
+  }
+
+  Future<void> complete(User u, int tries) async {
+    Complete c = await _myProvider.complete(u, this, tries);
+    _completes.add(c);
   }
 
 
@@ -144,6 +161,13 @@ class Rute {
       }
     }
 
+    List<Complete> cc = List();
+    List completes = map["completes"];
+    for(var k in completes) {
+      Complete c = Complete(await prov.getUser(k["user"]), k["tries"], parse(map["date"]));
+      cc.add(c);
+    }
+
     List _points = List<RutePoint>();
     if(coordinates != null) {
       json.decode(coordinates).forEach((val) {
@@ -154,7 +178,7 @@ class Rute {
 
     }
 
-    return Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag);
+    return Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag, cc);
   }
 
   @override

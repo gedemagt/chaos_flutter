@@ -21,8 +21,8 @@ import 'package:timer/pages/exceptions.dart';
 
 class WebAPI {
 
-  static const String HOST = "195.201.200.125/chaos";
-  //static const String HOST = "10.0.2.2:5000";
+  //static const String HOST = "195.201.200.125/chaos";
+  static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
 
@@ -91,6 +91,17 @@ class WebAPI {
     });
 
     return result;
+  }
+  
+  static Future<void> complete(User u, Rute rute, int tries) async {
+    Response r = await _postJson("complete",
+      body: {
+        "rute": rute.uuid,
+        "user": u.uuid,
+        "tries": tries
+      }
+    );
+    print("[WebAPI] Uploaded completion of $rute by $u with $tries tries");
   }
 
   static Future<User> getUser(String uuid) async {

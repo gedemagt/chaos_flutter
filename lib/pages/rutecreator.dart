@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
+import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
 import 'package:image_picker/image_picker.dart';
@@ -65,7 +66,12 @@ class _RuteCreatorState extends State<RuteCreator> {
 
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
-    _image.rename(newPath);
+    try {
+      _image.rename(newPath);
+    }
+    catch (o) {
+      print("[RuteCreator] Could not rename file from ${_image.path} -> $newPath");
+    }
 
     return imageUUID;
   }
@@ -105,7 +111,8 @@ class _RuteCreatorState extends State<RuteCreator> {
                 );
                 widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image).then((r) {
                   Navigator.of(c).pop();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
+                  Navigator.pop(context, r);
+                  //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteViewer([r], 0)));
                 },
                 onError: (e) {
                   Navigator.of(c).pop();

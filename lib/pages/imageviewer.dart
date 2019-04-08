@@ -114,7 +114,6 @@ class _ImageViewerState extends State<ImageViewer> {
   void initState() {
     super.initState();
 
-
     _canEdit = canEdit(widget._rute.author);
 
     _rute = widget._rute;

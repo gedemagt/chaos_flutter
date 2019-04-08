@@ -128,11 +128,24 @@ class _RuteListPageState extends State<RuteListPage> {
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            Rute r = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RuteCreator(prov, StateManager().lastRute != null ? StateManager().lastRute.sector : null))
+              MaterialPageRoute(
+                builder: (context) {
+                  return RuteCreator(prov, StateManager().lastRute != null ? StateManager().lastRute.sector : null);
+                }
+              )
             );
+            setState(() {
+              _filteredRutes = _filter.filter(_rutes);
+            });
+            List<Rute> toShow = _filteredRutes.contains(r) ? _filteredRutes : _rutes;
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RuteViewer(toShow, toShow.indexOf(r)))
+            );
+
           }),
           body: body,
           drawer: ChaosDrawer(isRutesSelected: true),

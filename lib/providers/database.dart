@@ -53,4 +53,6 @@ abstract class Database {
     gymStream.close();
   }
 
+  Future<Complete> complete(User u, Rute r, int tries);
+
 }

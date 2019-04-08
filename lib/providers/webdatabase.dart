@@ -155,4 +155,10 @@ class WebDatabase extends Database {
     await WebAPI.init();
   }
 
+  @override
+  Future<Complete> complete(User u, Rute r, int tries) async {
+    WebAPI.complete(u, r, tries);
+    return Complete(u, tries, DateTime.now());
+  }
+
 }
