@@ -107,8 +107,8 @@ class _GymsPageState extends State<GymsPage> {
               itemCount: _searchGyms.length,
               itemBuilder: (context, idx) {
                 Gym g = _searchGyms[idx];
-                return Card(
-                    elevation: 0.1,
+                return Container(
+                    padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
                     child: ListTile (
                       title: Text(
                         g.name,
@@ -118,7 +118,7 @@ class _GymsPageState extends State<GymsPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text("Rutes    ${g.nrRutes}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text("Rutes    ${g.nrRutes}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                           Text("Sectors ${g.sectors.length}",
                           )
                         ],
