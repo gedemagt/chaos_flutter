@@ -5,8 +5,6 @@ from flask_login import UserMixin, login_user, login_required, logout_user
 from server import db, app, login_manager, get_sql_position
 from competition import competition
 from random import randint
-from flask_bcrypt import Bcrypt
-bcrypt = Bcrypt(app)
 
 class Gym(db.Model):
     id = db.Column(db.Integer, primary_key=True)

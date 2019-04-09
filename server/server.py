@@ -2,6 +2,8 @@ import os
 from flask import Flask, request, jsonify, send_from_directory, abort
 from db import db
 from flask_login import LoginManager
+from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
 
 
 def get_sql_position():
@@ -21,3 +23,7 @@ db.init_app(app)
 db.app = app
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+migrate = Migrate(app, db)
+
+bcrypt = Bcrypt(app)
