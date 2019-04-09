@@ -1,5 +1,6 @@
 
 
+import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 
@@ -9,6 +10,7 @@ class Filter {
   final int maxGrade;
   final User author;
   final String sector;
+  final bool ignoreCompleted;
 
   /// Order set by
   /// 0 = date
@@ -19,7 +21,7 @@ class Filter {
 
   final bool ascending;
 
-  Filter({this.minGrade = 0, this.maxGrade = 20, this.author, this.sector, this.orderBy = 0, this.ascending = false});
+  Filter({this.ignoreCompleted = false, this.minGrade = 0, this.maxGrade = 20, this.author, this.sector, this.orderBy = 0, this.ascending = false});
 
   List<Rute> filter(List<Rute> rutes) {
 
@@ -27,6 +29,7 @@ class Filter {
 
     for(Rute r in rutes) {
       bool accept = minGrade <= r.grade && r.grade <= maxGrade;
+      if(ignoreCompleted) accept = accept && !r.hasCompleted(StateManager().loggedInUser);
       if(author != null) accept = accept && r.author == author;
       if(sector != null) accept = accept && r.sector == sector;
       if(accept) result.add(r);

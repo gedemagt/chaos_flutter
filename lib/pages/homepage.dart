@@ -153,7 +153,7 @@ class _RuteListPageState extends State<RuteListPage> {
             currentIndex: _filter.author == StateManager().loggedInUser ? 1 : 0,
             onTap: (idx) {
               setState(() {
-                _filter = Filter(author: idx==0? null : StateManager().loggedInUser, minGrade: _filter.minGrade, maxGrade: _filter.maxGrade, sector: _filter.sector, orderBy: _filter.orderBy, ascending: _filter.ascending);
+                _filter = Filter(author: idx==0? null : StateManager().loggedInUser, minGrade: _filter.minGrade, maxGrade: _filter.maxGrade, sector: _filter.sector, orderBy: _filter.orderBy, ascending: _filter.ascending, ignoreCompleted: _filter.ignoreCompleted);
                 _filteredRutes = _filter.filter(_rutes);
               });
             },

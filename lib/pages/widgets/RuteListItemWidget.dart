@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/util.dart';
@@ -16,13 +17,30 @@ class RuteListItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    Widget title;
+    if(_rute.hasCompleted(StateManager().loggedInUser)) {
+      title = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            _rute.name,
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          Icon(Icons.check_circle, color: Colors.greenAccent)
+        ],
+      );
+    }
+    else {
+      title = Text(
+        _rute.name,
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
       child: ListTile(
-        title: Text(
-          _rute.name,
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: title,
         subtitle: Container(
           child: Column(
             children: <Widget>[

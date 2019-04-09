@@ -182,10 +182,21 @@ def complete():
     except KeyError:
         abort(400)
 
-    db.session.add(Complete(tries=tries,
-                            user = db.session.query(User).filter_by(uuid=user).first().id,
-                            rute = db.session.query(Rute).filter_by(uuid=rute).first().id
-                            ))
+
+    u = db.session.query(User).filter_by(uuid=user).first().id
+    r = db.session.query(Rute).filter_by(uuid=rute).first().id
+    complete = db.session.query(Complete).filter_by(user=u, rute=r).first()
+
+    print(u, r, complete)
+    if complete is None:
+        db.session.add(Complete(tries=tries,
+                                user = db.session.query(User).filter_by(uuid=user).first().id,
+                                rute = db.session.query(Rute).filter_by(uuid=rute).first().id
+                                ))
+    else:
+        complete.tries = tries
+
+
     db.session.commit()
     return "Succes"
 

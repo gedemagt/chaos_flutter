@@ -82,14 +82,14 @@ class _RuteViewerState extends State<RuteViewer> {
       itemBuilder: (context, pos) {
 
         Widget completeWidget;
-        List<Complete> completes = rutes[pos].completes;
+        Set<Complete> completes = rutes[pos].completes;
         Complete c = completes.firstWhere((complete) => StateManager().loggedInUser == complete.u, orElse: () => null);
 
         if(c != null) {
           completeWidget = Padding(padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
             child:Column(
               children: <Widget>[
-                Text("Completed on", style: TextStyle(color:Colors.blue, inherit: false)),
+                Text("${c.retries == 1 ? 'Flashed' : 'Completed'} on", style: TextStyle(color:Colors.blue, inherit: false)),
                 Text(DateFormat("dd-MM-yyyy").format(c.date), style: TextStyle(color:Colors.blue, inherit: false))
               ],
             )
@@ -99,9 +99,27 @@ class _RuteViewerState extends State<RuteViewer> {
           completeWidget = FlatButton(
             child: Text("Complete"),
             onPressed: (){
-              setState(() {
-                rutes[pos].complete(StateManager().loggedInUser, 2);
-              });
+              TextEditingController _ctrl = TextEditingController(text:"1");
+              showDialog(
+                context: context,
+                child: AlertDialog(
+                  content: TextField(
+                    controller: _ctrl,
+                    keyboardType: TextInputType.numberWithOptions(),
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                      onPressed: () {
+                        setState(() {
+                          rutes[pos].complete(StateManager().loggedInUser, int.parse(_ctrl.text));
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Text('OK'),
+                    )
+                  ],
+                )
+              );
             },
             color: Theme.of(context).primaryColor,
             textColor: Colors.white,

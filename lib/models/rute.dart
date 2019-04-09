@@ -14,10 +14,22 @@ import 'package:timer/models/user.dart';
 
 class Complete {
   final User u;
+  final Rute r;
   final int retries;
   final DateTime date;
 
-  Complete(this.u, this.retries, this.date);
+  Complete(this.u, this.r, this.retries, this.date);
+
+  @override
+  String toString() {
+    return "Complete<${u.name} - ${r.name} - $retries>}";
+  }
+
+  @override
+  bool operator ==(other) {
+    return u == other.u && r == other.r;
+  }
+
 }
 
 class Rute {
@@ -33,7 +45,7 @@ class Rute {
   String _imageUUID;
   Gym _gym;
 
-  List<Complete> _completes = List();
+  Set<Complete> _completes = Set();
 
   String _tag;
   Image _image;
@@ -71,8 +83,7 @@ class Rute {
       this._sector,
       this._imageUUID,
       this._gym,
-      this._tag,
-      this._completes);
+      this._tag);
 
   Rute.create(String name, String sector, String imageUUID, Database provider)  {
 
@@ -95,6 +106,9 @@ class Rute {
     _completes.add(c);
   }
 
+  bool hasCompleted(User u) {
+    return _completes.any((c) => c.u==u);
+  }
 
   void addPoint(RutePoint p) {
     _points.add(p);
@@ -162,11 +176,6 @@ class Rute {
     }
 
     List<Complete> cc = List();
-    List completes = map["completes"];
-    for(var k in completes) {
-      Complete c = Complete(await prov.getUser(k["user"]), k["tries"], parse(map["date"]));
-      cc.add(c);
-    }
 
     List _points = List<RutePoint>();
     if(coordinates != null) {
@@ -178,7 +187,15 @@ class Rute {
 
     }
 
-    return Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag, cc);
+    var rute = Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag);
+
+    List completes = map["completes"];
+    for(var k in completes) {
+      Complete c = Complete(await prov.getUser(k["user"]), rute, k["tries"], parse(map["date"]));
+      rute._completes.add(c);
+    }
+
+    return rute;
   }
 
   @override

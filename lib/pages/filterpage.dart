@@ -24,11 +24,12 @@ class _FilterPageState extends State<FilterPage> {
     _min = widget.current.minGrade.toDouble();
     _max = widget.current.maxGrade.toDouble();
     _sector = widget.current.sector;
+    _exclude = widget.current.ignoreCompleted;
     if(_sector == null) _sector = "All";
   }
 
   int _orderByValue;
-  bool _ascending;
+  bool _ascending, _exclude;
   double _min, _max;
   String _sector;
 
@@ -94,7 +95,8 @@ class _FilterPageState extends State<FilterPage> {
                   ascending: _ascending,
                   minGrade: _min.toInt(),
                   maxGrade: _max.toInt(),
-                  sector: _sector == "All" ? null : _sector
+                  sector: _sector == "All" ? null : _sector,
+                  ignoreCompleted: _exclude
                   )
                 );
               },
@@ -142,12 +144,18 @@ class _FilterPageState extends State<FilterPage> {
                 ListTile(
                   title: Text("Ascending"),
                   trailing: Switch(value: _ascending, onChanged: (v) => setState((){_ascending = v;})),
-                )],),
+                ),
+                ListTile(
+                  title: Text("Exclude completed"),
+                  trailing: Switch(value: _exclude, onChanged: (v) => setState((){_exclude = v;})),
+                )
+              ],
+              ),
             ),
             FilterItem(
               heading: "Grade interval",
               child: Container(
-                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                   child:Row(
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget> [
@@ -168,7 +176,7 @@ class _FilterPageState extends State<FilterPage> {
                 alignment: Alignment.center,
                 child: sectorChooser,
               ),
-            )
+            ),
           ]
         ),
       )
@@ -191,12 +199,9 @@ class FilterItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-        child: ListTile(
+    return ListTile(
           title: Container(
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+            padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
             child: Center(
               child: Text(heading,
                 style: TextStyle(
@@ -206,9 +211,7 @@ class FilterItem extends StatelessWidget {
             )
           ),
           subtitle: child,
-        )
-      )
-    );
+        );
   }
 
 }
