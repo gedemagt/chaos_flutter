@@ -94,7 +94,7 @@ class WebAPI {
   }
   
   static Future<void> complete(User u, Rute rute, int tries) async {
-    Response r = await _postJson("complete",
+    await _postJson("complete",
       body: {
         "rute": rute.uuid,
         "user": u.uuid,

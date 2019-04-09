@@ -3,7 +3,6 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
-import 'package:timer/webapi.dart';
 
 class RuteViewer extends StatefulWidget {
 
@@ -102,23 +101,25 @@ class _RuteViewerState extends State<RuteViewer> {
               TextEditingController _ctrl = TextEditingController(text:"1");
               showDialog(
                 context: context,
-                child: AlertDialog(
-                  content: TextField(
-                    controller: _ctrl,
-                    keyboardType: TextInputType.numberWithOptions(),
-                  ),
-                  actions: <Widget>[
-                    FlatButton(
-                      onPressed: () {
-                        setState(() {
-                          rutes[pos].complete(StateManager().loggedInUser, int.parse(_ctrl.text));
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: Text('OK'),
-                    )
-                  ],
-                )
+                builder: (context) {
+                  return AlertDialog(
+                    content: TextField(
+                      controller: _ctrl,
+                      keyboardType: TextInputType.numberWithOptions(),
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        onPressed: () {
+                          setState(() {
+                            rutes[pos].complete(StateManager().loggedInUser, int.parse(_ctrl.text));
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK'),
+                      )
+                    ],
+                  );
+                },
               );
             },
             color: Theme.of(context).primaryColor,

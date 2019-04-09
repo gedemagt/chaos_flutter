@@ -30,6 +30,8 @@ class Complete {
     return u == other.u && r == other.r;
   }
 
+  @override
+  int get hashCode => u.hashCode * 3 * r.hashCode;
 }
 
 class Rute {
@@ -174,8 +176,6 @@ class Rute {
         coordinates = coordinates.replaceAll(RegExp("]"), "}]");
       }
     }
-
-    List<Complete> cc = List();
 
     List _points = List<RutePoint>();
     if(coordinates != null) {
