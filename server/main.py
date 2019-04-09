@@ -2,7 +2,7 @@ from flask import request, jsonify, send_from_directory, abort
 from datetime import datetime
 import os
 from flask_login import UserMixin, login_user, login_required, logout_user
-from server import db, app, login_manager, get_sql_position
+from server import db, app, login_manager, get_sql_position, bcrypt
 from competition import competition
 from random import randint
 
@@ -185,7 +185,6 @@ def complete():
     r = db.session.query(Rute).filter_by(uuid=rute).first().id
     complete = db.session.query(Complete).filter_by(user=u, rute=r).first()
 
-    print(u, r, complete)
     if complete is None:
         db.session.add(Complete(tries=tries,
                                 user = db.session.query(User).filter_by(uuid=user).first().id,
@@ -334,7 +333,6 @@ def get_rutes():
                     } for c,u in db.session.query(Complete,User).join(Complete, User.id == Complete.user).filter(Complete.rute == rute.id)]}
          for rute in query}
 
-    print(r)
     r.update({"last_sync": str(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))})
     return jsonify(r), 200
 
@@ -537,7 +535,7 @@ def get_participation():
           "tries": tries,
           "completed": completed,
           "date": date}
-    print(r)
+
     return jsonify(r), 200
 
 
