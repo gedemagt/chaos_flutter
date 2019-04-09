@@ -72,8 +72,6 @@ class _RuteViewerState extends State<RuteViewer> {
   @override
   Widget build(BuildContext context) {
 
-
-
     return PageView.builder(
       physics: scrollPhysics,
       controller: controller,
@@ -103,9 +101,21 @@ class _RuteViewerState extends State<RuteViewer> {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    content: TextField(
-                      controller: _ctrl,
-                      keyboardType: TextInputType.numberWithOptions(),
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("Number of tries:           "),
+                        Expanded(child:TextField(
+                          maxLength: 3,
+                          textAlign: TextAlign.center,
+                          maxLengthEnforced: true,
+                          decoration: InputDecoration(
+                            counterText: "",
+                          ),
+                          controller: _ctrl,
+                          keyboardType: TextInputType.numberWithOptions(),
+                        )),
+                      ],
                     ),
                     actions: <Widget>[
                       FlatButton(
