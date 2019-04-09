@@ -88,8 +88,8 @@ class _RuteViewerState extends State<RuteViewer> {
           completeWidget = Padding(padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
             child:Column(
               children: <Widget>[
-                Text("${c.retries == 1 ? 'Flashed' : 'Completed'} on", style: TextStyle(color:Colors.blue, inherit: false)),
-                Text(DateFormat("dd-MM-yyyy").format(c.date), style: TextStyle(color:Colors.blue, inherit: false))
+                Text("${c.retries == 1 ? 'Flashed' : 'Completed'}", style: TextStyle(color:Colors.blue, inherit: false)),
+                Text(DateFormat("dd-MM-yyyy").format(c.date), style: TextStyle(color:Colors.blue, inherit: false, fontSize: 10, fontWeight: FontWeight.bold))
               ],
             )
           );
@@ -111,7 +111,10 @@ class _RuteViewerState extends State<RuteViewer> {
                       FlatButton(
                         onPressed: () {
                           setState(() {
-                            rutes[pos].complete(StateManager().loggedInUser, int.parse(_ctrl.text));
+
+                            rutes[pos].complete(StateManager().loggedInUser,
+                                  int.parse(_ctrl.text));
+
                           });
                           Navigator.pop(context);
                         },
@@ -127,7 +130,6 @@ class _RuteViewerState extends State<RuteViewer> {
           );
         }
 
-        print(rutes[pos].completes);
         List<Widget> widgets = [
           Expanded(child:getImageViewer(pos))
         ];
