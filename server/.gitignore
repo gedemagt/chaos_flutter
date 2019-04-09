@@ -1,0 +1,4 @@
+*.pyc
+static
+bak
+venv
