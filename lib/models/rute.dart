@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:timer/StateManager.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/providers/imageprovider.dart';
 import 'package:timer/models/point.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'dart:async';
 import 'package:timer/util.dart';
 import 'package:timer/models/gym.dart';
@@ -87,22 +85,6 @@ class Rute {
       this._gym,
       this._tag);
 
-  Rute.create(String name, String sector, String imageUUID, Database provider)  {
-
-    _myProvider = provider;
-    _uuid = getUUID("rute");
-    _created = DateTime.now();
-    _edit = _created;
-    _author = StateManager().loggedInUser;
-    _points = List<RutePoint>();
-    _grade = 0;
-    _imageUUID = imageUUID;
-    _gym = StateManager().gym;
-    _name = name;
-    _sector = sector;
-    _tag = "";
-  }
-
   Future<void> complete(User u, int tries) async {
     Complete c = await _myProvider.complete(u, this, tries);
     _completes.add(c);
@@ -155,10 +137,10 @@ class Rute {
     String _imageUUID = map["image"];
     String _uuid = map["uuid"];
     String _name = map["name"];
-    Gym _gym = await WebDatabase().getGym(map["gym"]);
+    Gym _gym = await prov.getGym(map["gym"]);
     String _sector = map["sector"];
     String _tag = map["tag"];
-    User _author = await WebDatabase().getUser(map["author"]);
+    User _author = await prov.getUser(map["author"]);
     int _grade = 0;
     try {
       _grade = int.parse(map["grade"]);

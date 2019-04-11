@@ -3,6 +3,7 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
+import 'package:timer/providers/database.dart';
 
 class RuteViewer extends StatefulWidget {
 
@@ -45,6 +46,8 @@ class _RuteViewerState extends State<RuteViewer> {
   ScrollPhysics scrollPhysics = ScrollPhysics();
   bool showBottom = true;
 
+  final Database _db = StateManager().db;
+
   @override
   void initState() {
     rutes = widget._r;
@@ -80,7 +83,7 @@ class _RuteViewerState extends State<RuteViewer> {
 
         Widget completeWidget;
         Set<Complete> completes = rutes[pos].completes;
-        Complete c = completes.firstWhere((complete) => StateManager().loggedInUser == complete.u, orElse: () => null);
+        Complete c = completes.firstWhere((complete) => _db.getLoggedInUser() == complete.u, orElse: () => null);
 
         if(c != null) {
           completeWidget = Padding(padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
@@ -122,7 +125,7 @@ class _RuteViewerState extends State<RuteViewer> {
                         onPressed: () {
                           setState(() {
 
-                            rutes[pos].complete(StateManager().loggedInUser,
+                            rutes[pos].complete(_db.getLoggedInUser(),
                                   int.parse(_ctrl.text));
 
                           });

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/util.dart';
@@ -9,14 +8,15 @@ class RuteListItemWidget extends StatelessWidget {
 
   final Function onTap;
   final Rute _rute;
+  final bool _completed;
 
-  RuteListItemWidget(this._rute, this.onTap);
+  RuteListItemWidget(this._rute, this.onTap, this._completed);
 
   @override
   Widget build(BuildContext context) {
 
     Widget title;
-    if(_rute.hasCompleted(StateManager().loggedInUser)) {
+    if(_completed) {
       title = Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[

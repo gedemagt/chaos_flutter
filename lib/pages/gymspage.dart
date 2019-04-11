@@ -7,7 +7,6 @@ import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/widgets/ChaosDrawer.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/providers/database.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/pages/creategympage.dart';
 
 class GymsPage extends StatefulWidget {
@@ -28,7 +27,7 @@ class _GymsPageState extends State<GymsPage> {
   List<Gym> _searchGyms;
   TextEditingController _searchCtrl = TextEditingController();
 
-  Database prov = WebDatabase();
+  Database prov = StateManager().db;
 
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
@@ -155,12 +154,12 @@ class _GymsPageState extends State<GymsPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CreateGymPage())
+              MaterialPageRoute(builder: (context) => CreateGymPage(prov))
             );
           },
           child: Icon(Icons.add),
         ),
-        drawer: ChaosDrawer(),
+        drawer: ChaosDrawer(prov),
         body: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

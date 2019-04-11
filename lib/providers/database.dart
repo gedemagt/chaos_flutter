@@ -55,4 +55,10 @@ abstract class Database {
 
   Future<Complete> complete(User u, Rute r, int tries);
 
+  Future<User> login(String username, String password);
+  Future<void> logout();
+
+  User getLoggedInUser();
+  bool isLoggedIn();
+
 }

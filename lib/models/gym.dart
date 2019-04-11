@@ -1,8 +1,7 @@
 import 'dart:convert';
+import 'package:timer/StateManager.dart';
 import 'package:timer/models/user.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/util.dart';
-import 'package:timer/webapi.dart';
 
 class Gym {
   DateTime _created;
@@ -34,7 +33,7 @@ class Gym {
   static Future<Gym> fromJson(Map map) async {
     String _uuid = map["uuid"];
     String _name = map["name"];
-    User _admin = await WebDatabase().getUser(map["admin"]);
+    User _admin = await StateManager().db.getUser(map["admin"]);
     Set<String> _sectors = Set();
     List<String> _tags = List();
     if(map["sectors"] != null) {
@@ -74,7 +73,7 @@ class Gym {
   }
 
   void save() {
-    WebAPI.saveGym(this);
+    StateManager().db.saveGym(this);
   }
 
 

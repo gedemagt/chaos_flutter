@@ -6,7 +6,6 @@ import 'package:timer/models/gym.dart';
 import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/registeruser.dart';
-import 'package:timer/webapi.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -69,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             _isLoggingIn = true;
           });
-          WebAPI.login(usernameController.text, passwordController.text).then((u) {
+          StateManager().db.login(usernameController.text, passwordController.text).then((u) {
             if(StateManager().gym == Gym.unknown)
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
             else

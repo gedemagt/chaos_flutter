@@ -11,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:http/http.dart' as http;
@@ -83,8 +82,6 @@ class WebAPI {
     }
 
     result = await getUser(r.body);
-
-    StateManager().loggedInUser = result;
 
     SharedPreferences.getInstance().then((sp) {
       sp.setString("cookie", _cookie);
@@ -192,7 +189,7 @@ class WebAPI {
         //print("Skipping deleted rute");
       }
       else{
-        rutes.add(await Rute.fromJson(val, WebDatabase()));
+        rutes.add(await Rute.fromJson(val, StateManager().db));
       }
     }
     print("[WebAPI] Downloaded ${rutes.length} rutes from $gym");
@@ -271,11 +268,9 @@ class WebAPI {
   }
 
   static Future<void> logout() async {
-    User loggedIn = StateManager().loggedInUser;
-    StateManager().loggedInUser = null;
     _cookie = "";
     await _get("logout");
-    print("[WebAPI] Logging out $loggedIn");
+    print("[WebAPI] Logging out");
   }
 
   static Future<String> createGym(String text, Set<String> sectors, User admin) async {

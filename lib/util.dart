@@ -27,10 +27,10 @@ Type intToType(int i) {
 }
 
 bool canEdit(User u) {
-  if(StateManager().loggedInUser.role == Role.ADMIN) return true;
+  if(StateManager().db.getLoggedInUser().role == Role.ADMIN) return true;
   if(u == null) return false;
   if(u == User.unknown) return false;
-  return StateManager().loggedInUser == u;
+  return StateManager().db.getLoggedInUser() == u;
 }
 
 var colormap = {

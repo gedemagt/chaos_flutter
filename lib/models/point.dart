@@ -63,4 +63,7 @@ class RutePoint {
     return _x == other.x && y == other.y;
   }
 
+  @override
+  int get hashCode => (((17 * 31) + _x.hashCode) * 31 + _y.hashCode)*31;
+
 }

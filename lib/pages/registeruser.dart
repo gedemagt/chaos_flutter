@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:timer/StateManager.dart';
 import 'package:timer/pages/gymspage.dart';
-import 'package:timer/webapi.dart';
 
 class RegisterUserPage extends StatefulWidget {
   RegisterUserPage({Key key, this.title}) : super(key: key);
@@ -69,8 +69,8 @@ class _RegisterUserPageState extends State<RegisterUserPage> {
           });
 
 
-          WebAPI.createUser(usernameController.text, email.text, passwordController.text).then((u) {
-            WebAPI.login(usernameController.text, passwordController.text).then((u){
+          StateManager().db.createUser(usernameController.text, email.text, passwordController.text).then((u) {
+            StateManager().db.login(usernameController.text, passwordController.text).then((u){
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
             });
           }).catchError((statusCode) {

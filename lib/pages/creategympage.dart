@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
-import 'package:timer/providers/webdatabase.dart';
+import 'package:timer/providers/database.dart';
 import 'package:timer/pages/homepage.dart';
 
 class CreateGymPage extends StatefulWidget {
-  CreateGymPage({Key key, this.gym}) : super(key: key);
+  CreateGymPage(this._db, {Key key, this.gym}) : super(key: key);
 
   final Gym gym;
+  final Database _db;
 
   @override
   _CreateGymPageState createState() => _CreateGymPageState();
@@ -70,7 +71,7 @@ class _CreateGymPageState extends State<CreateGymPage> {
                   );
                 }
                 else {
-                  WebDatabase().createGym(_nameCtrl.text, StateManager().loggedInUser, sectors: sectors.toList()).then((newGym) {
+                  widget._db.createGym(_nameCtrl.text, widget._db.getLoggedInUser(), sectors: sectors.toList()).then((newGym) {
                     StateManager().gym = newGym;
                     Navigator.pushReplacement(
                         context,
