@@ -51,7 +51,7 @@ class WebAPI {
 
   static Future<void> init() async {
   
-    print("[WebAPI] Initializing");
+    print("[WebAPI] Initializing with host: $HOST");
 
     if(_hasBeenInitialized) {
       print("[WebAPI] Trying to reinitialize");
@@ -61,7 +61,7 @@ class WebAPI {
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
     _hasBeenInitialized = true;
-    print("[WebAPI] cookie: $cookie");
+    print("[WebAPI] Loaded cookie: $cookie");
   }
 
 
@@ -79,7 +79,7 @@ class WebAPI {
       String cookie =
       (index == -1) ? rawCookie : rawCookie.substring(0, index);
       _cookie = cookie;
-      print("WebAPI: new session cookie: $cookie");
+      print("[WebAPI] New session cookie: $cookie");
     }
 
     result = await getUser(r.body);
@@ -108,7 +108,7 @@ class WebAPI {
     Response r = await _get("get_user/$uuid");
     Map m = json.decode(r.body);
     User u = User.fromJson(m.values.first);
-    print("[WebAPI] Downloading user $uuid: '$u'");
+    print("[WebAPI] Downloaded user $u");
     return u;
 
   }
@@ -120,7 +120,7 @@ class WebAPI {
     for(var entry in j.entries) {
       users.add(User.fromJson(entry.value));
     }
-    print("[WebAPI] Downloading users '${users.length} ($gym)'");
+    print("[WebAPI] Downloaded ${users.length} users");
     return users;
   }
 
@@ -131,7 +131,7 @@ class WebAPI {
     for(var entry in j.entries) {
       gyms.add(await Gym.fromJson(entry.value));
     }
-    print("[WebAPI] Downloading gyms '${gyms.length}'");
+    print("[WebAPI] Downloaded ${gyms.length} gyms");
     return gyms;
   }
 
@@ -140,7 +140,7 @@ class WebAPI {
     var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
     gym = await Gym.fromJson(j[uuid]);
-    print("[WebAPI] Downloading gym $uuid: '$gym'");
+    print("[WebAPI] Downloaded gym $gym");
     return gym;
   }
 
@@ -156,10 +156,10 @@ class WebAPI {
         String newPath = join(d.path, "$imageUUID.jpg");
         File f = new File(newPath);
         image = f;
-        print("[Found image '$newPath' locally");
+        print("[WebAPI] Found image '$newPath' locally");
       }
       else {
-        print("Using supplied file: ${image.path}");
+        print("[WebAPI] Using supplied file: ${image.path}");
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
@@ -172,7 +172,7 @@ class WebAPI {
 
       var response = await req.send();
       handleRequest(response);
-      print("[WebAPI] Uploading image '$imageUUID'");
+      print("[WebAPI] Uploaded image '$imageUUID'");
   }
 
 
@@ -195,7 +195,7 @@ class WebAPI {
         rutes.add(await Rute.fromJson(val, WebDatabase()));
       }
     }
-    print("[WebAPI] Downloading rutes ${rutes.length} (filter=$gym)");
+    print("[WebAPI] Downloaded ${rutes.length} rutes from $gym");
     return rutes;
   }
 
@@ -210,7 +210,7 @@ class WebAPI {
         "uuid": uuid
       }
     );
-    print("[WebAPI] Creating user '$username ($uuid - $email)'");
+    print("[WebAPI] Created user '$username ($uuid - $email)'");
     return uuid;
   }
 
@@ -230,7 +230,7 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Creating rute '$name ($uuid - $imageUUID - $author - $g)'");
+    print("[WebAPI] Created rute '$name ($uuid - $imageUUID - $author - $g)'");
     return uuid;
   }
 
@@ -248,7 +248,7 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Saving rute '$t'");
+    print("[WebAPI] Saved rute $t");
   }
 
   static Future<void> saveGym(Gym g) async {
@@ -262,19 +262,20 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Saving gym '$g'");
+    print("[WebAPI] Saved gym $g");
   }
 
   static Future<void> deleteRute(Rute t) async {
     await _get("delete/" + t.uuid);
-    print("[WebAPI] Deleting rute $t");
+    print("[WebAPI] Deleted rute $t");
   }
 
   static Future<void> logout() async {
+    User loggedIn = StateManager().loggedInUser;
     StateManager().loggedInUser = null;
     _cookie = "";
     await _get("logout");
-    print("[WebAPI] Logging out");
+    print("[WebAPI] Logging out $loggedIn");
   }
 
   static Future<String> createGym(String text, Set<String> sectors, User admin) async {
@@ -290,7 +291,7 @@ class WebAPI {
       }
     );
 
-    print("[WebAPI] Creating gym '$text ($uuid)'");
+    print("[WebAPI] Created gym '$text ($uuid)'");
 
     return uuid;
   }
