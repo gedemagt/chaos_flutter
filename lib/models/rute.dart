@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:timer/providers/database.dart';
-import 'package:timer/providers/imageprovider.dart';
 import 'package:timer/models/point.dart';
 import 'dart:async';
 import 'package:timer/util.dart';
@@ -49,9 +48,6 @@ class Rute {
 
   String _tag;
   Image _image;
-
-  UUIDImageProvider prov = UUIDImageProvider();
-
 
   get image => _image;
   get name => _name;
@@ -115,7 +111,7 @@ class Rute {
   }
 
   Future<Image> getImage() async {
-    return prov.getImage(_imageUUID);
+    return _myProvider.getImage(_imageUUID);
   }
 
   Map toJsonMap() {

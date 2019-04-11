@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/src/widgets/image.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
@@ -192,6 +195,21 @@ class WebDatabase extends Database {
     print("[WebDatabase] Logged out $_loggedin");
     _loggedin = null;
     rememberLoggedIn(null);
+  }
+
+  static Map<String, Image> _cache = Map<String, Image>();
+
+  @override
+  Future<Image> getImage(String uuid) async {
+    if(!_cache.containsKey(_cache)) {
+      final d = await getApplicationDocumentsDirectory();
+      String newPath = join(d.path, "$uuid.jpg");
+      File f = new File(newPath);
+      if(await f.exists()) _cache[uuid] = Image.file(f);
+      else _cache[uuid] = WebAPI.downloadImage(uuid);
+    }
+
+    return _cache[uuid];
   }
 
 }

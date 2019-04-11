@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
@@ -60,5 +61,7 @@ abstract class Database {
 
   User getLoggedInUser();
   bool isLoggedIn();
+
+  Future<Image> getImage(String uuid);
 
 }
