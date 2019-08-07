@@ -34,8 +34,12 @@ class WebDatabase extends Database {
   @override
   Future<User> createUser(String name, String email, String password) async {
     String uuid = await WebAPI.createUser(name, email, password);
-    await refreshUsers();
-    return getUser(uuid);
+    Future<User> r =  Future.value(User.unknown);
+    if(isLoggedIn())  {
+      await refreshUsers();
+      r = getUser(uuid);
+    }
+    return r;
   }
 
   @override
