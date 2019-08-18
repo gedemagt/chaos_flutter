@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.5"
-     inkscape:cx="-385.99999"
-     inkscape:cy="149.39257"
+     inkscape:cx="-372.15929"
+     inkscape:cy="73.567793"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,39 +62,26 @@
        x="-1.4210855e-14"
        y="161.53337" />
     <g
-       id="g70"
-       transform="translate(13.975712,1.8529582)">
-      <text
-         transform="scale(1.0775542,0.92802756)"
+       id="g64"
+       transform="translate(-1.5875775,-2.381168)">
+      <path
          id="text25"
-         y="257.99045"
-         x="13.785614"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:86.3259964px;line-height:1.25;font-family:Impact;-inkscape-font-specification:Impact;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.15814996"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Impact;-inkscape-font-specification:Impact;fill:#ffffff;stroke-width:2.15814996"
-           y="257.99045"
-           x="13.785614"
-           id="tspan23"
-           sodipodi:role="line">C</tspan></text>
+         transform="matrix(0.26458333,0,0,0.26458333,0,161.53336)"
+         d="m 205.61523,56.996094 c -15.67897,0 -29.58562,2.316706 -41.71679,6.949218 -12.01673,4.533949 -21.45752,10.793652 -28.32422,18.777344 -6.75226,7.983693 -10.81611,16.312687 -12.18945,24.986324 -1.37335,8.57508 -2.0586,21.48566 -2.0586,38.73438 V 216.375 c 0,23.45826 2.23196,41.05212 6.69531,52.78125 4.46336,11.63056 13.56152,20.74777 27.29493,27.35156 13.7334,6.6038 31.18508,9.90625 52.35742,9.90625 5.96021,0 11.63337,-0.34321 17.03515,-1.00976 0.11685,-16.3557 0.848,-28.83015 2.20899,-37.32813 1.48881,-9.40289 5.89292,-18.431 13.21289,-27.08594 7.44404,-8.65493 17.67997,-15.44031 30.70703,-20.35546 6.61273,-2.5252 13.71173,-4.41447 21.29688,-5.66993 0,-0.0232 0,-0.0452 0,-0.0684 v -9.31445 h -72.27149 v 30.01367 c 0,13.10903 -0.85949,21.43607 -2.57617,24.98438 -1.60223,3.54831 -5.09179,5.32422 -10.4707,5.32422 -5.60781,0 -9.21223,-1.77591 -10.81446,-5.32422 -1.60223,-3.54831 -2.40429,-11.13702 -2.40429,-22.76758 V 126.63281 c 0,-12.12338 0.80206,-20.00938 2.40429,-23.65625 1.60223,-3.646869 5.37699,-5.470701 11.32813,-5.470701 5.26447,0 8.64112,1.528498 10.1289,4.583981 1.60224,2.95693 2.4043,10.49771 2.4043,22.6211 v 41.6914 h 72.27149 v -22.76757 c 0,-22.37406 -2.17453,-38.8345 -6.52344,-49.380864 C 281.26242,83.608983 272.16426,74.739194 258.31641,67.642578 244.46855,60.545963 226.90201,56.996094 205.61523,56.996094 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:86.3259964px;line-height:1.25;font-family:Impact;-inkscape-font-specification:Impact;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:8.15678692"
+         inkscape:connector-curvature="0" />
       <text
          transform="scale(1.0775542,0.92802756)"
          id="text25-4"
-         y="300.35388"
-         x="37.981083"
+         y="307.48242"
+         x="53.897415"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:86.3259964px;line-height:1.25;font-family:Impact;-inkscape-font-specification:Impact;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.15814996"
          xml:space="preserve"><tspan
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Impact;-inkscape-font-specification:Impact;fill:#ffffff;stroke-width:2.15814996"
-           y="300.35388"
-           x="37.981083"
+           y="307.48242"
+           x="53.897415"
            id="tspan23-0"
            sodipodi:role="line">C</tspan></text>
-      <rect
-         y="214.07396"
-         x="54.432304"
-         height="5.4456162"
-         width="11.988686"
-         id="rect63"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.21548641" />
     </g>
   </g>
 </svg>
