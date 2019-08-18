@@ -3,6 +3,7 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/models/user.dart';
 import 'package:timer/pages/loginpage.dart';
 import 'package:timer/pages/homepage.dart';
+import 'package:timer/providers/back4appdatabase.dart';
 import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/webapi.dart';
 import 'package:timer/models/gym.dart';
@@ -10,6 +11,10 @@ import 'package:timer/pages/gymspage.dart';
 
 Future main() async {
 
+
+  await Back4AppDatabase().init();
+
+  return;
 
   await WebDatabase().init();
   await StateManager().init();
