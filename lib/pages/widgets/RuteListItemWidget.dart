@@ -1,28 +1,44 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timer/models/rute.dart';
-import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/sectorindicator.dart';
 import 'package:timer/util.dart';
 
 class RuteListItemWidget extends StatelessWidget {
 
+  final Function onTap;
   final Rute _rute;
+  final bool _completed;
 
-  RuteListItemWidget(this._rute);
+  RuteListItemWidget(this._rute, this.onTap, this._completed);
 
   @override
   Widget build(BuildContext context) {
 
-    return Card(
-      elevation: 0.1,
+    Widget title;
+    if(_completed) {
+      title = Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            _rute.name,
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          Icon(Icons.check_circle, color: Colors.greenAccent)
+        ],
+      );
+    }
+    else {
+      title = Text(
+        _rute.name,
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
       child: ListTile(
-        title: Text(
-          _rute.name,
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: title,
         subtitle: Container(
           child: Column(
             children: <Widget>[
@@ -55,10 +71,7 @@ class RuteListItemWidget extends StatelessWidget {
         ),
         leading: SectorIndicator(_rute.sector),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => RuteViewer(_rute))
-          );
+          onTap(_rute);
         },
       )
     );

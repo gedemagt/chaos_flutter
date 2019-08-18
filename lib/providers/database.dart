@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
@@ -52,5 +53,15 @@ abstract class Database {
     userStream.close();
     gymStream.close();
   }
+
+  Future<Complete> complete(User u, Rute r, int tries);
+
+  Future<User> login(String username, String password);
+  Future<void> logout();
+
+  User getLoggedInUser();
+  bool isLoggedIn();
+
+  Future<Image> getImage(String uuid);
 
 }

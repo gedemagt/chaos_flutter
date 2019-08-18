@@ -1,16 +1,35 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:timer/StateManager.dart';
 import 'package:timer/providers/database.dart';
-import 'package:timer/providers/imageprovider.dart';
 import 'package:timer/models/point.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'dart:async';
 import 'package:timer/util.dart';
 import 'package:timer/models/gym.dart';
 
 import 'package:timer/models/user.dart';
+
+class Complete {
+  final User u;
+  final Rute r;
+  final int retries;
+  final DateTime date;
+
+  Complete(this.u, this.r, this.retries, this.date);
+
+  @override
+  String toString() {
+    return "Complete<${u.name} - ${r.name} - $retries>}";
+  }
+
+  @override
+  bool operator ==(other) {
+    return u == other.u && r == other.r;
+  }
+
+  @override
+  int get hashCode => u.hashCode * 3 * r.hashCode;
+}
 
 class Rute {
   String _name;
@@ -25,11 +44,10 @@ class Rute {
   String _imageUUID;
   Gym _gym;
 
+  Set<Complete> _completes = Set();
+
   String _tag;
   Image _image;
-
-  UUIDImageProvider prov = UUIDImageProvider();
-
 
   get image => _image;
   get name => _name;
@@ -42,6 +60,7 @@ class Rute {
   get date => _created;
   get edit => _edit;
   get imageUUID => _imageUUID;
+  get completes => _completes;
 
   set grade(val) {
     _grade = val;
@@ -62,22 +81,14 @@ class Rute {
       this._gym,
       this._tag);
 
-  Rute.create(String name, String sector, String imageUUID, Database provider)  {
-
-    _myProvider = provider;
-    _uuid = getUUID("rute");
-    _created = DateTime.now();
-    _edit = _created;
-    _author = StateManager().loggedInUser;
-    _points = List<RutePoint>();
-    _grade = 0;
-    _imageUUID = imageUUID;
-    _gym = StateManager().gym;
-    _name = name;
-    _sector = sector;
-    _tag = "";
+  Future<void> complete(User u, int tries) async {
+    Complete c = await _myProvider.complete(u, this, tries);
+    _completes.add(c);
   }
 
+  bool hasCompleted(User u) {
+    return _completes.any((c) => c.u==u);
+  }
 
   void addPoint(RutePoint p) {
     _points.add(p);
@@ -100,7 +111,7 @@ class Rute {
   }
 
   Future<Image> getImage() async {
-    return prov.getImage(_imageUUID);
+    return _myProvider.getImage(_imageUUID);
   }
 
   Map toJsonMap() {
@@ -122,10 +133,10 @@ class Rute {
     String _imageUUID = map["image"];
     String _uuid = map["uuid"];
     String _name = map["name"];
-    Gym _gym = await WebDatabase().getGym(map["gym"]);
+    Gym _gym = await prov.getGym(map["gym"]);
     String _sector = map["sector"];
     String _tag = map["tag"];
-    User _author = await WebDatabase().getUser(map["author"]);
+    User _author = await prov.getUser(map["author"]);
     int _grade = 0;
     try {
       _grade = int.parse(map["grade"]);
@@ -154,7 +165,15 @@ class Rute {
 
     }
 
-    return Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag);
+    var rute = Rute._internal(_uuid, _name, _created, _edit, _author, _points, _grade, prov, _sector, _imageUUID, _gym, _tag);
+
+    List completes = map["completes"];
+    for(var k in completes) {
+      Complete c = Complete(await prov.getUser(k["user"]), rute, k["tries"], parse(map["date"]));
+      rute._completes.add(c);
+    }
+
+    return rute;
   }
 
   @override

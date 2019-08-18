@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:timer/StateManager.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/imageviewer.dart';
 import 'package:intl/intl.dart';
+import 'package:timer/providers/database.dart';
+
+class RuteViewer extends StatefulWidget {
+
+  final List<Rute> _r;
+  final int startIndex;
+
+  RuteViewer(this._r, this.startIndex);
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _RuteViewerState();
+  }
+
+}
+
+class _RuteViewerState extends State<RuteViewer> {
 
 
-class RuteViewer extends StatelessWidget {
 
-  final Rute _r;
-
-  RuteViewer(this._r);
 
 //  final List<Comment> comments = [
 //    Comment("I used to think I was pretty good at Chess. Whenever I asked my friends to play after school I would always beat them. Then I actually joined in a Chess club, and never won a game again.",    "BallClamps",
@@ -24,11 +39,135 @@ class RuteViewer extends StatelessWidget {
 //    ),
 //  ];
 
+  List<Rute> rutes;
+  ImageViewer iv;
+
+  PageController controller;
+  ScrollPhysics scrollPhysics = ScrollPhysics();
+  bool showBottom = true;
+
+  final Database _db = StateManager().db;
+
+  @override
+  void initState() {
+    rutes = widget._r;
+    controller = PageController(initialPage: widget.startIndex);
+    controller.addListener(() {
+      StateManager().lastRute = rutes[controller.page.floor()];
+    });
+    super.initState();
+  }
+
+  ImageViewer getImageViewer(int pos) {
+    return ImageViewer(rutes[pos],
+      startEdit: () => setState(() {
+        scrollPhysics = NeverScrollableScrollPhysics();
+        showBottom = false;
+      }),
+      endEdit: () => setState(() {
+        scrollPhysics = null;
+        showBottom = true;
+      })
+    );
+  }
 
 
   @override
   Widget build(BuildContext context) {
-    return ImageViewer(_r);
+
+    return PageView.builder(
+      physics: scrollPhysics,
+      controller: controller,
+      itemCount: rutes.length,
+      itemBuilder: (context, pos) {
+
+        Widget completeWidget;
+        Set<Complete> completes = rutes[pos].completes;
+        Complete c = completes.firstWhere((complete) => _db.getLoggedInUser() == complete.u, orElse: () => null);
+
+        if(c != null) {
+          completeWidget = Padding(padding: EdgeInsets.fromLTRB(5, 5, 5, 10),
+            child:Column(
+              children: <Widget>[
+                Text("${c.retries == 1 ? 'Flashed' : 'Completed'}", style: TextStyle(color:Colors.blue, inherit: false)),
+                Text(DateFormat("dd-MM-yyyy").format(c.date), style: TextStyle(color:Colors.blue, inherit: false, fontSize: 10, fontWeight: FontWeight.bold))
+              ],
+            )
+          );
+        }
+        else {
+          completeWidget = FlatButton(
+            child: Text("Complete"),
+            onPressed: (){
+              TextEditingController _ctrl = TextEditingController(text:"1");
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("Number of tries:           "),
+                        Expanded(child:TextField(
+                          maxLength: 3,
+                          textAlign: TextAlign.center,
+                          maxLengthEnforced: true,
+                          decoration: InputDecoration(
+                            counterText: "",
+                          ),
+                          controller: _ctrl,
+                          keyboardType: TextInputType.numberWithOptions(),
+                        )),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        onPressed: () {
+                          setState(() {
+
+                            rutes[pos].complete(_db.getLoggedInUser(),
+                                  int.parse(_ctrl.text));
+
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK'),
+                      )
+                    ],
+                  );
+                },
+              );
+            },
+            color: Theme.of(context).primaryColor,
+            textColor: Colors.white,
+          );
+        }
+
+        List<Widget> widgets = [
+          Expanded(child:getImageViewer(pos))
+        ];
+        if(showBottom) widgets.add(
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              color: Colors.white,
+              child:Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+
+              completeWidget
+            ]
+          ))
+        );
+
+        return Column(
+          children: widgets
+        );
+
+
+      }
+    );
+
+
 //    List<Widget> children = List();
 //
 //

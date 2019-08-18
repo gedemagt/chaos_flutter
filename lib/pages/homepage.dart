@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/filter.dart';
 import 'package:timer/pages/filterpage.dart';
+import 'package:timer/pages/ruteviewer.dart';
 import 'package:timer/pages/widgets/ChaosDrawer.dart';
 import 'package:timer/pages/widgets/RuteListItemWidget.dart';
 import 'package:timer/pages/widgets/nothingtoshow.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/pages/rutecreator.dart';
-import 'package:timer/providers/webdatabase.dart';
 
 class RuteListPage extends StatefulWidget {
   RuteListPage({Key key, this.title}) : super(key: key);
@@ -28,7 +28,7 @@ class _RuteListPageState extends State<RuteListPage> {
 
   List<Rute> _rutes;
   List<Rute> _filteredRutes;
-  Database prov = WebDatabase();
+  final Database prov = StateManager().db;
 
   Filter _filter = Filter();
 
@@ -89,7 +89,12 @@ class _RuteListPageState extends State<RuteListPage> {
         child: ListView.builder(
           itemCount: _filteredRutes.length,
           itemBuilder: (context, idx) {
-            return RuteListItemWidget(_filteredRutes[idx]);
+            return RuteListItemWidget(_filteredRutes[idx], (r) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RuteViewer(_filteredRutes, _filteredRutes.indexOf(r)))
+              );
+            }, _filteredRutes[idx].hasCompleted(prov.getLoggedInUser()));
         })
       );
     }
@@ -122,19 +127,32 @@ class _RuteListPageState extends State<RuteListPage> {
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            Rute r = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => RuteCreator(prov))
+              MaterialPageRoute(
+                builder: (context) {
+                  return RuteCreator(prov, StateManager().lastRute != null ? StateManager().lastRute.sector : null);
+                }
+              )
             );
+            setState(() {
+              _filteredRutes = _filter.filter(_rutes);
+            });
+            List<Rute> toShow = _filteredRutes.contains(r) ? _filteredRutes : _rutes;
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RuteViewer(toShow, toShow.indexOf(r)))
+            );
+
           }),
           body: body,
-          drawer: ChaosDrawer(isRutesSelected: true),
+          drawer: ChaosDrawer(prov, isRutesSelected: true),
           bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _filter.author == StateManager().loggedInUser ? 1 : 0,
+            currentIndex: _filter.author == prov.getLoggedInUser() ? 1 : 0,
             onTap: (idx) {
               setState(() {
-                _filter = Filter(author: idx==0? null : StateManager().loggedInUser, minGrade: _filter.minGrade, maxGrade: _filter.maxGrade, sector: _filter.sector, orderBy: _filter.orderBy, ascending: _filter.ascending);
+                _filter = Filter(author: idx==0? null : prov.getLoggedInUser(), minGrade: _filter.minGrade, maxGrade: _filter.maxGrade, sector: _filter.sector, orderBy: _filter.orderBy, ascending: _filter.ascending, ignoreCompleted: _filter.ignoreCompleted);
                 _filteredRutes = _filter.filter(_rutes);
               });
             },

@@ -4,14 +4,15 @@ import 'package:timer/util.dart';
 class SectorIndicator extends StatelessWidget {
 
   final String sector;
+  final double size;
 
-  SectorIndicator(this.sector);
+  SectorIndicator(this.sector, {this.size = 50.0});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: 50,
-        height: 50,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
             color: getColor(sector),
             shape: BoxShape.circle

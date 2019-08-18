@@ -27,18 +27,18 @@ Type intToType(int i) {
 }
 
 bool canEdit(User u) {
-  if(StateManager().loggedInUser.role == Role.ADMIN) return true;
+  if(StateManager().db.getLoggedInUser().role == Role.ADMIN) return true;
   if(u == null) return false;
   if(u == User.unknown) return false;
-  return StateManager().loggedInUser == u;
+  return StateManager().db.getLoggedInUser() == u;
 }
 
 var colormap = {
   "grå": Colors.grey,
   "lilla": Colors.deepPurpleAccent,
-  "gul": Colors.yellowAccent,
+  "gul": Colors.yellow[600],
   "sort": Colors.black54,
-  "grøn": Colors.greenAccent,
+  "grøn": Colors.green[800],
   "rød": Colors.redAccent
 };
 
@@ -48,6 +48,7 @@ Color getColor(String s) {
   colormap.forEach((key,val) {
     if(s.contains(key)) result = val;
   });
+
   return result;
 }
 

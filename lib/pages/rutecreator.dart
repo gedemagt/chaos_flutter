@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:timer/StateManager.dart';
-import 'package:timer/pages/imageviewer.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,8 +13,9 @@ class RuteCreator extends StatefulWidget {
 
   ///
   final Database _prov;
+  final String _initialSector;
 
-  RuteCreator(this._prov);
+  RuteCreator(this._prov, this._initialSector);
 
   @override
   _RuteCreatorState createState() => _RuteCreatorState();
@@ -32,6 +32,16 @@ class _RuteCreatorState extends State<RuteCreator> {
 
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if(widget._initialSector != null && StateManager().gym.sectors.contains(widget._initialSector)) {
+      _sector = widget._initialSector;
+    }
+
+  }
 
   Future getImageCamera() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera, maxHeight: MAX_SIZE, maxWidth: MAX_SIZE);
@@ -53,7 +63,12 @@ class _RuteCreatorState extends State<RuteCreator> {
 
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
-    _image.rename(newPath);
+    try {
+      _image.rename(newPath);
+    }
+    catch (o) {
+      print("[RuteCreator] Could not rename file from ${_image.path} -> $newPath");
+    }
 
     return imageUUID;
   }
@@ -93,7 +108,8 @@ class _RuteCreatorState extends State<RuteCreator> {
                 );
                 widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image).then((r) {
                   Navigator.of(c).pop();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ImageViewer(r)));
+                  Navigator.pop(context, r);
+                  //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteViewer([r], 0)));
                 },
                 onError: (e) {
                   Navigator.of(c).pop();

@@ -11,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
-import 'package:timer/providers/webdatabase.dart';
 import 'package:timer/models/rute.dart';
 import 'package:timer/models/user.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +50,7 @@ class WebAPI {
 
   static Future<void> init() async {
   
-    print("[WebAPI] Initializing");
+    print("[WebAPI] Initializing with host: $HOST");
 
     if(_hasBeenInitialized) {
       print("[WebAPI] Trying to reinitialize");
@@ -61,7 +60,7 @@ class WebAPI {
     String cookie = sp.getString("cookie");
     _cookie = cookie != null ? cookie : "";
     _hasBeenInitialized = true;
-    print("[WebAPI] cookie: $cookie");
+    print("[WebAPI] Loaded cookie: $cookie");
   }
 
 
@@ -79,12 +78,10 @@ class WebAPI {
       String cookie =
       (index == -1) ? rawCookie : rawCookie.substring(0, index);
       _cookie = cookie;
-      print("WebAPI: new session cookie: $cookie");
+      print("[WebAPI] New session cookie: $cookie");
     }
 
     result = await getUser(r.body);
-
-    StateManager().loggedInUser = result;
 
     SharedPreferences.getInstance().then((sp) {
       sp.setString("cookie", _cookie);
@@ -92,12 +89,23 @@ class WebAPI {
 
     return result;
   }
+  
+  static Future<void> complete(User u, Rute rute, int tries) async {
+    await _postJson("complete",
+      body: {
+        "rute": rute.uuid,
+        "user": u.uuid,
+        "tries": tries
+      }
+    );
+    print("[WebAPI] Uploaded completion of $rute by $u with $tries tries");
+  }
 
   static Future<User> getUser(String uuid) async {
     Response r = await _get("get_user/$uuid");
     Map m = json.decode(r.body);
     User u = User.fromJson(m.values.first);
-    print("[WebAPI] Downloading user $uuid: '$u'");
+    print("[WebAPI] Downloaded user $u");
     return u;
 
   }
@@ -109,7 +117,7 @@ class WebAPI {
     for(var entry in j.entries) {
       users.add(User.fromJson(entry.value));
     }
-    print("[WebAPI] Downloading users '${users.length} ($gym)'");
+    print("[WebAPI] Downloaded ${users.length} users");
     return users;
   }
 
@@ -120,7 +128,7 @@ class WebAPI {
     for(var entry in j.entries) {
       gyms.add(await Gym.fromJson(entry.value));
     }
-    print("[WebAPI] Downloading gyms '${gyms.length}'");
+    print("[WebAPI] Downloaded ${gyms.length} gyms");
     return gyms;
   }
 
@@ -129,7 +137,7 @@ class WebAPI {
     var result = await _get("get_gym/$uuid");
     Map j = json.decode(result.body);
     gym = await Gym.fromJson(j[uuid]);
-    print("[WebAPI] Downloading gym $uuid: '$gym'");
+    print("[WebAPI] Downloaded gym $gym");
     return gym;
   }
 
@@ -145,10 +153,10 @@ class WebAPI {
         String newPath = join(d.path, "$imageUUID.jpg");
         File f = new File(newPath);
         image = f;
-        print("[Found image '$newPath' locally");
+        print("[WebAPI] Found image '$newPath' locally");
       }
       else {
-        print("Using supplied file: ${image.path}");
+        print("[WebAPI] Using supplied file: ${image.path}");
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
@@ -161,7 +169,7 @@ class WebAPI {
 
       var response = await req.send();
       handleRequest(response);
-      print("[WebAPI] Uploading image '$imageUUID'");
+      print("[WebAPI] Uploaded image '$imageUUID'");
   }
 
 
@@ -181,10 +189,10 @@ class WebAPI {
         //print("Skipping deleted rute");
       }
       else{
-        rutes.add(await Rute.fromJson(val, WebDatabase()));
+        rutes.add(await Rute.fromJson(val, StateManager().db));
       }
     }
-    print("[WebAPI] Downloading rutes ${rutes.length} (filter=$gym)");
+    print("[WebAPI] Downloaded ${rutes.length} rutes from $gym");
     return rutes;
   }
 
@@ -199,7 +207,8 @@ class WebAPI {
         "uuid": uuid
       }
     );
-    print("[WebAPI] Creating user '$username ($uuid - $email)'");
+    print("[WebAPI] Created user '$username ($uuid - $email)'");
+    return uuid;
   }
 
   static Future<void> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {
@@ -218,7 +227,7 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Creating rute '$name ($uuid - $imageUUID - $author - $g)'");
+    print("[WebAPI] Created rute '$name ($uuid - $imageUUID - $author - $g)'");
     return uuid;
   }
 
@@ -236,7 +245,7 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Saving rute '$t'");
+    print("[WebAPI] Saved rute $t");
   }
 
   static Future<void> saveGym(Gym g) async {
@@ -250,16 +259,15 @@ class WebAPI {
         "edit": format(now)
       }
     );
-    print("[WebAPI] Saving gym '$g'");
+    print("[WebAPI] Saved gym $g");
   }
 
   static Future<void> deleteRute(Rute t) async {
     await _get("delete/" + t.uuid);
-    print("[WebAPI] Deleting rute $t");
+    print("[WebAPI] Deleted rute $t");
   }
 
   static Future<void> logout() async {
-    StateManager().loggedInUser = null;
     _cookie = "";
     await _get("logout");
     print("[WebAPI] Logging out");
@@ -278,7 +286,7 @@ class WebAPI {
       }
     );
 
-    print("[WebAPI] Creating gym '$text ($uuid)'");
+    print("[WebAPI] Created gym '$text ($uuid)'");
 
     return uuid;
   }

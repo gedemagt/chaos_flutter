@@ -3,15 +3,16 @@ import 'package:timer/StateManager.dart';
 import 'package:timer/pages/creategympage.dart';
 import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/loginpage.dart';
+import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
-import 'package:timer/webapi.dart';
 
 class ChaosDrawer extends StatelessWidget {
 
   final bool isRutesSelected;
   final bool isGymSelected;
+  final Database _db;
 
-  ChaosDrawer({this.isRutesSelected = true, this.isGymSelected = false});
+  ChaosDrawer(this._db, {this.isRutesSelected = true, this.isGymSelected = false});
 
 
   @override
@@ -22,7 +23,7 @@ class ChaosDrawer extends StatelessWidget {
           Container(
               color: Theme.of(context).primaryColor,
               child: ListTile(
-                  title: Text(StateManager().loggedInUser.name,
+                  title: Text(_db.getLoggedInUser().name,
                       style: Theme.of(context).primaryTextTheme.title),
                   leading: Icon(Icons.account_circle, size: 50,),
                   subtitle: Text("<email>",
@@ -39,7 +40,7 @@ class ChaosDrawer extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CreateGymPage(gym: StateManager().gym))
+                    MaterialPageRoute(builder: (context) => CreateGymPage(_db, gym: StateManager().gym))
                 );
               },
             ) : null,
@@ -55,10 +56,10 @@ class ChaosDrawer extends StatelessWidget {
             title: Text("Logout"),
             leading: Icon(Icons.navigate_before),
             onTap: () {
-              WebAPI.logout().whenComplete(() {
+              _db.logout().whenComplete(() {
                 Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()));
               });
             },
           ),

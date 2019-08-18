@@ -1,9 +1,10 @@
 import 'dart:convert';
 
-import 'package:simple_logger/simple_logger.dart';
 import 'package:timer/models/gym.dart';
-import 'package:timer/models/user.dart';
+import 'package:timer/models/rute.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timer/providers/database.dart';
+import 'package:timer/providers/webdatabase.dart';
 
 class StateManager {
   static final StateManager _singleton = new StateManager._internal();
@@ -12,13 +13,16 @@ class StateManager {
     return _singleton;
   }
 
+  final Database db = WebDatabase();
+
   StateManager._internal();
 
   Gym _gym = Gym.unknown;
-  User _loggedInUser = User.unknown;
+  Rute _lastRute;
+  get lastRute => _lastRute;
+  set lastRute(val) => _lastRute = val;
 
   get gym => _gym;
-  get loggedInUser => _loggedInUser;
 
   set gym(val) {
     print("[StateManager] Setting default gym to ${val.toString()}");
@@ -28,23 +32,10 @@ class StateManager {
     _gym = val;
   }
 
-  set loggedInUser(val) {
-    print("[StateManager] Setting logged in user to ${val.toString()}");
-    SharedPreferences.getInstance().then((sp) {
-      sp.setString("loggedIn", val != null ? json.encode(val.toJson()): null);
-    });
-    _loggedInUser = val;
-  }
-
   Future<void> init() async {
     print("[StateManager] Initializing StateManger()");
+    await db.init();
     SharedPreferences sp = await SharedPreferences.getInstance();
-    String loggedInUUID = sp.getString("loggedIn");
-    print(loggedInUUID);
-    if(loggedInUUID != null) {
-      _loggedInUser = User.fromJson(json.decode(loggedInUUID));
-      print("[StateManager] Loaded loggedInUser: $_loggedInUser");
-    }
 
     String rememberedGym = sp.get("gym");
     try {

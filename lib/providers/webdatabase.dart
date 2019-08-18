@@ -1,5 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
@@ -9,14 +14,6 @@ import 'package:timer/util.dart';
 import 'package:timer/webapi.dart';
 
 class WebDatabase extends Database {
-
-  static final WebDatabase _singleton = new WebDatabase._internal();
-
-  factory WebDatabase() {
-    return _singleton;
-  }
-
-  WebDatabase._internal();
 
   @override
   Future<Gym> createGym(String name, User admin, {List<String> sectors, List<String> tags}) async {
@@ -29,16 +26,20 @@ class WebDatabase extends Database {
   Future<Rute> createRute(String name, String sector, String imageUUID, File image) async {
     await WebAPI.uploadImage(imageUUID, image: image);
     String uuid = getUUID("rute");
-    await WebAPI.createRute(uuid, name, imageUUID, StateManager().loggedInUser, sector, StateManager().gym, 0);
+    await WebAPI.createRute(uuid, name, imageUUID, getLoggedInUser(), sector, StateManager().gym, 0);
     await refreshRutes();
     return getRute(uuid);
   }
-
+  
   @override
   Future<User> createUser(String name, String email, String password) async {
     String uuid = await WebAPI.createUser(name, email, password);
-    await refreshUsers();
-    return getUser(uuid);
+    Future<User> r =  Future.value(User.unknown);
+    if(isLoggedIn())  {
+      await refreshUsers();
+      r = getUser(uuid);
+    }
+    return r;
   }
 
   @override
@@ -153,6 +154,66 @@ class WebDatabase extends Database {
   @override
   Future<void> init() async {
     await WebAPI.init();
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String loggedInUUID = sp.getString("loggedIn");
+    if(loggedInUUID != null) {
+      _loggedin = User.fromJson(json.decode(loggedInUUID));
+      print("[WebDatabase] Loaded loggedInUser: $_loggedin");
+    }
+  }
+
+  @override
+  Future<Complete> complete(User u, Rute r, int tries) async {
+    WebAPI.complete(u, r, tries);
+    return Complete(u, r, tries, DateTime.now());
+  }
+
+  @override
+  User getLoggedInUser() {
+    return _loggedin;
+  }
+
+  @override
+  bool isLoggedIn() {
+    return WebAPI.hasBeenLoggedIn() && _loggedin != null && _loggedin != User.unknown;
+  }
+  
+  User _loggedin;
+
+  void rememberLoggedIn(User u) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    sp.setString("loggedIn", u != null ? json.encode(u.toJson()): null);
+  }
+
+  @override
+  Future<User> login(String username, String password) async {
+    _loggedin = await WebAPI.login(username, password);
+    rememberLoggedIn(_loggedin);
+    print("[WebDatabase] New logged in user: $_loggedin");
+    return _loggedin;
+  }
+
+  @override
+  Future<void> logout() async {
+    await WebAPI.logout();
+    print("[WebDatabase] Logged out $_loggedin");
+    _loggedin = null;
+    rememberLoggedIn(null);
+  }
+
+  static Map<String, Image> _cache = Map<String, Image>();
+
+  @override
+  Future<Image> getImage(String uuid) async {
+    if(!_cache.containsKey(_cache)) {
+      final d = await getApplicationDocumentsDirectory();
+      String newPath = join(d.path, "$uuid.jpg");
+      File f = new File(newPath);
+      if(await f.exists()) _cache[uuid] = Image.file(f);
+      else _cache[uuid] = WebAPI.downloadImage(uuid);
+    }
+
+    return _cache[uuid];
   }
 
 }
