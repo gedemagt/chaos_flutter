@@ -6,6 +6,7 @@ import 'package:timer/util.dart';
 import 'package:timer/pages/widgets/gradepicker.dart';
 import 'package:timer/models/rute.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:flutter/painting.dart';
 
 class ImageViewer extends StatefulWidget {
 
@@ -121,7 +122,7 @@ class _ImageViewerState extends State<ImageViewer> {
 
     widget._rute.getImage().then((image) => setState(() {
       _image = image;
-      _image.image.resolve(ImageConfiguration()).addListener((info,__) {
+      _image.image.resolve(ImageConfiguration()).addListener(ImageStreamListener((info,__) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           var sH =_keyRed.currentContext.size.height / height;
           var sW =_keyRed.currentContext.size.width / width;
@@ -132,13 +133,13 @@ class _ImageViewerState extends State<ImageViewer> {
           height = info.image.height.toDouble();
           width = info.image.width.toDouble();
         });
-      });
+      }));
     }));
 
     points = _rute.points;
     crtl = PhotoViewController();
 
-    crtl.addListener(updateOffsetAndScale);
+    crtl.addIgnorableListener(updateOffsetAndScale);
 
     print("[ImageViewer] Showing rute $_rute");
 
@@ -213,8 +214,7 @@ class _ImageViewerState extends State<ImageViewer> {
                 position: crtl.initial.position,
                 scale: min(sH, sW),
                 rotation: crtl.initial.rotation,
-                rotationFocusPoint: crtl.initial.rotationFocusPoint,
-                scaleState: crtl.initial.scaleState);
+                rotationFocusPoint: crtl.initial.rotationFocusPoint);
             updateOffsetAndScale();
           });
           setState(() => _editing = !_editing);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/models/filter.dart';
-import 'package:flutter_range_slider/flutter_range_slider.dart';
+import 'package:flutter_range_slider/flutter_range_slider.dart' as rs;
 import 'package:timer/util.dart';
 
 class FilterPage extends StatefulWidget {
@@ -35,7 +35,7 @@ class _FilterPageState extends State<FilterPage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget w = RangeSlider(
+    Widget w = rs.RangeSlider(
       min:0,
       max:20,
       //showValueIndicator: true,
