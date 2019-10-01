@@ -238,9 +238,6 @@ class _ImageViewerState extends State<ImageViewer> {
 
     if(_editing) {
       imageContainer = GestureDetector(
-          onPanUpdate: (s) {
-          print("pasn)");
-        },
 
         onTapUp: (details) {
           setState(() {

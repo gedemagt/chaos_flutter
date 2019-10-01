@@ -18,6 +18,7 @@ def get_sql_position():
 app = Flask(__name__, static_folder="static")
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + get_sql_position()
 app.secret_key = "ReallySecret2"
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 db.init_app(app)
 db.app = app
