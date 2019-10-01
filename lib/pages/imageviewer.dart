@@ -239,7 +239,7 @@ class _ImageViewerState extends State<ImageViewer> {
     if(_editing) {
       imageContainer = GestureDetector(
 
-        onTapUp: (details) {
+        onTapDown: (details) {
           setState(() {
             RenderBox rb = _keyRed.currentContext.findRenderObject();
             Offset xy = rb.globalToLocal(details.globalPosition);
