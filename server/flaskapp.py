@@ -371,9 +371,10 @@ def init_flask_app(static_folder, db_path, secret):
         img = db.session.query(Image).filter_by(uuid=uuid).first()
         if img is None:
             abort(400)
-        if not os.path.exists(img.url):
+        expected_path = os.path.join(app.static_folder, os.path.basename(img.url))
+        if not os.path.exists(expected_path):
             abort(400)
-        return send_from_directory(app.static_folder, os.path.relpath(img.url, app.static_folder))
+        return send_from_directory(app.static_folder, os.path.relpath(expected_path, app.static_folder))
 
 
     @app.route('/delete/<string:uuid>', methods=['GET','POST'])
