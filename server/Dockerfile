@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000:5000
 
-CMD ["python", "main.py", "--db", "/chaos-db.db", "--static", "/static"]
+CMD ["python", "main.py", "--db", "/res/chaos-db.db", "--static", "/res/static"]
