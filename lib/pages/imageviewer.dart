@@ -128,7 +128,15 @@ class _ImageViewerState extends State<ImageViewer> {
           var sW =_keyRed.currentContext.size.width / width;
           crtl.scale = min(sH, sW);
         });
-        pv = PhotoView(imageProvider:_image.image, controller: crtl, backgroundDecoration: BoxDecoration(color: Colors.white));
+        pv = PhotoView(
+            imageProvider:_image.image,
+            controller: crtl,
+            backgroundDecoration:
+            BoxDecoration(color: Colors.white),
+            onTapDown: (cxt, details, v) {
+              if(_editing) _addNewPoint(details);
+            },
+        );
         setState(() {
           height = info.image.height.toDouble();
           width = info.image.width.toDouble();
@@ -184,6 +192,17 @@ class _ImageViewerState extends State<ImageViewer> {
       selected = p;
       _radioValue1 = typeToInt(p.type);
     });
+  }
+
+  void _addNewPoint(details) {
+    setState(() {
+      RenderBox rb = _keyRed.currentContext.findRenderObject();
+      Offset xy = rb.globalToLocal(details.globalPosition);
+      xy -= pvOffset;
+      RutePoint p = RutePoint(xy.dx/size.width, xy.dy / size.height);
+      _rute.addPoint(p);
+      selected = p;
+    });
 
   }
 
@@ -235,23 +254,6 @@ class _ImageViewerState extends State<ImageViewer> {
 
     List<Widget> stuff = List<Widget>();
     Widget imageContainer = Container(child:pv, key:_keyRed);
-
-    if(_editing) {
-      imageContainer = GestureDetector(
-
-        onTapDown: (details) {
-          setState(() {
-            RenderBox rb = _keyRed.currentContext.findRenderObject();
-            Offset xy = rb.globalToLocal(details.globalPosition);
-            xy -= pvOffset;
-            RutePoint p = RutePoint(xy.dx/size.width, xy.dy / size.height);
-            _rute.addPoint(p);
-            selected = p;
-          });
-        },
-        child: imageContainer
-      );
-    }
 
     stuff.add(imageContainer);
     points.forEach(
