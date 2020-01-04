@@ -20,7 +20,7 @@ import 'package:timer/pages/exceptions.dart';
 
 class WebAPI {
 
-  static const String HOST = "195.201.200.125/chaos";
+  static const String HOST = "chaos.jeshj.duckdns.org";
   //static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
@@ -160,7 +160,7 @@ class WebAPI {
       }
 
       var stream = new http.ByteStream(DelegatingStream.typed(image.openRead()));
-      MultipartRequest req = http.MultipartRequest("POST", getURI(HOST, "add_image/$imageUUID"));
+      MultipartRequest req = http.MultipartRequest("POST", getURI("add_image/$imageUUID"));
       req.headers["cookie"] = _cookie;
       var multipartFile = new http.MultipartFile('data', stream, await image.length(),
           filename: basename(image.path));
@@ -299,7 +299,7 @@ class WebAPI {
 
     headers["cookie"] = _cookie;
 
-    Response r = await http.post(getURI(HOST, dest), headers:headers, body:body, encoding: encoding);
+    Response r = await http.post(getURI(dest), headers:headers, body:body, encoding: encoding);
     handleRequest(r);
     return r;
 
@@ -326,23 +326,25 @@ class WebAPI {
 
     headers["cookie"] = _cookie;
 
-    Response r = await http.get(getURI(HOST, dest), headers:headers);
+    Response r = await http.get(getURI(dest), headers:headers);
     handleRequest(r);
     return r;
 
   }
 
-  static Uri getURI(String host, String dest) {
-    if(dest.startsWith("/")) dest = dest.replaceFirst("/", "");
-
-    if (host.contains("/")) {
-      List<String> parts = split(host);
-      host = parts[0];
-      List<String> last = parts.getRange(1, parts.length).toList();
-      last.addAll(split(dest));
-      dest = joinAll(last);
-    }
-    return Uri.http(host, dest);
+  static Uri getURI(String dest) {
+//    print(host);
+//    print(dest);
+//    if(dest.startsWith("/")) dest = dest.replaceFirst("/", "");
+//
+//    if (host.contains("/")) {
+//      List<String> parts = split(host);
+//      host = parts[0];
+//      List<String> last = parts.getRange(1, parts.length).toList();
+//      last.addAll(split(dest));
+//      dest = joinAll(last);
+//    }
+    return Uri.https(HOST, dest);
   }
 
 }
