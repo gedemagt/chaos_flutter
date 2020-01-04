@@ -1,5 +1,3 @@
-from server import app
-from flask import request, abort, jsonify
 from db import db
 from datetime import datetime
 

@@ -6,6 +6,7 @@ import 'package:timer/util.dart';
 import 'package:timer/pages/widgets/gradepicker.dart';
 import 'package:timer/models/rute.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:flutter/painting.dart';
 
 class ImageViewer extends StatefulWidget {
 
@@ -121,24 +122,32 @@ class _ImageViewerState extends State<ImageViewer> {
 
     widget._rute.getImage().then((image) => setState(() {
       _image = image;
-      _image.image.resolve(ImageConfiguration()).addListener((info,__) {
+      _image.image.resolve(ImageConfiguration()).addListener(ImageStreamListener((info,__) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           var sH =_keyRed.currentContext.size.height / height;
           var sW =_keyRed.currentContext.size.width / width;
           crtl.scale = min(sH, sW);
         });
-        pv = PhotoView(imageProvider:_image.image, controller: crtl, backgroundDecoration: BoxDecoration(color: Colors.white));
+        pv = PhotoView(
+            imageProvider:_image.image,
+            controller: crtl,
+            backgroundDecoration:
+            BoxDecoration(color: Colors.white),
+            onTapDown: (cxt, details, v) {
+              if(_editing) _addNewPoint(details);
+            },
+        );
         setState(() {
           height = info.image.height.toDouble();
           width = info.image.width.toDouble();
         });
-      });
+      }));
     }));
 
     points = _rute.points;
     crtl = PhotoViewController();
 
-    crtl.addListener(updateOffsetAndScale);
+    crtl.addIgnorableListener(updateOffsetAndScale);
 
     print("[ImageViewer] Showing rute $_rute");
 
@@ -183,6 +192,17 @@ class _ImageViewerState extends State<ImageViewer> {
       selected = p;
       _radioValue1 = typeToInt(p.type);
     });
+  }
+
+  void _addNewPoint(details) {
+    setState(() {
+      RenderBox rb = _keyRed.currentContext.findRenderObject();
+      Offset xy = rb.globalToLocal(details.globalPosition);
+      xy -= pvOffset;
+      RutePoint p = RutePoint(xy.dx/size.width, xy.dy / size.height);
+      _rute.addPoint(p);
+      selected = p;
+    });
 
   }
 
@@ -213,8 +233,7 @@ class _ImageViewerState extends State<ImageViewer> {
                 position: crtl.initial.position,
                 scale: min(sH, sW),
                 rotation: crtl.initial.rotation,
-                rotationFocusPoint: crtl.initial.rotationFocusPoint,
-                scaleState: crtl.initial.scaleState);
+                rotationFocusPoint: crtl.initial.rotationFocusPoint);
             updateOffsetAndScale();
           });
           setState(() => _editing = !_editing);
@@ -235,26 +254,6 @@ class _ImageViewerState extends State<ImageViewer> {
 
     List<Widget> stuff = List<Widget>();
     Widget imageContainer = Container(child:pv, key:_keyRed);
-
-    if(_editing) {
-      imageContainer = GestureDetector(
-          onPanUpdate: (s) {
-          print("pasn)");
-        },
-
-        onTapUp: (details) {
-          setState(() {
-            RenderBox rb = _keyRed.currentContext.findRenderObject();
-            Offset xy = rb.globalToLocal(details.globalPosition);
-            xy -= pvOffset;
-            RutePoint p = RutePoint(xy.dx/size.width, xy.dy / size.height);
-            _rute.addPoint(p);
-            selected = p;
-          });
-        },
-        child: imageContainer
-      );
-    }
 
     stuff.add(imageContainer);
     points.forEach(
