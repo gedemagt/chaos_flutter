@@ -23,7 +23,7 @@ class RuteCreator extends StatefulWidget {
 
 class _RuteCreatorState extends State<RuteCreator> {
 
-  static const double MAX_SIZE = 2048;
+  static const double MAX_SIZE = 1024;
 
   String _sector = "Uncategorized";
   File _image;
@@ -64,7 +64,9 @@ class _RuteCreatorState extends State<RuteCreator> {
     String imageUUID = getUUID("image");
     String newPath = join(d.path, "$imageUUID.jpg");
     try {
-      _image.rename(newPath);
+      File newFile = await _image.copy(newPath);
+      await _image.delete();
+      _image = newFile;
     }
     catch (o) {
       print("[RuteCreator] Could not rename file from ${_image.path} -> $newPath");
