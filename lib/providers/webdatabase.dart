@@ -50,7 +50,7 @@ class WebDatabase extends Database {
   @override
   Future<void> deleteRute(Rute rute) async {
     WebAPI.deleteRute(rute);
-    ruteCache.remove(rute);
+    ruteCache.remove(rute.uuid);
     ruteStream.sink.add(getRutes());
   }
 
