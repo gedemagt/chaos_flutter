@@ -100,7 +100,7 @@ def init_flask_app(static_folder, db_path, secret):
 
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + db_path
     app.secret_key = secret
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
     db.init_app(app)
     db.app = app

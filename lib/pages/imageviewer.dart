@@ -202,6 +202,7 @@ class _ImageViewerState extends State<ImageViewer> {
       RutePoint p = RutePoint(xy.dx/size.width, xy.dy / size.height);
       _rute.addPoint(p);
       selected = p;
+      _radioValue1 = typeToInt(p.type);
     });
 
   }
@@ -241,7 +242,7 @@ class _ImageViewerState extends State<ImageViewer> {
             if (widget.startEdit != null) widget.startEdit();
           }
           else {
-            if(widget.endEdit != null)widget.endEdit();
+            if(widget.endEdit != null) widget.endEdit();
           }
         }));
   }
