@@ -23,7 +23,7 @@ class RuteCreator extends StatefulWidget {
 
 class _RuteCreatorState extends State<RuteCreator> {
 
-  static const double MAX_SIZE = 1024;
+  static const double MAX_SIZE = 1400;
 
   String _sector = "Uncategorized";
   File _image;
@@ -84,7 +84,7 @@ class _RuteCreatorState extends State<RuteCreator> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("New rute"),
+        title: Text("New problem"),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.check),
@@ -101,7 +101,7 @@ class _RuteCreatorState extends State<RuteCreator> {
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             CircularProgressIndicator(),
-                            Text("Uploading rute...", style: TextStyle(inherit: false),)
+                            Text("Uploading problem...", style: TextStyle(inherit: false),)
                           ],
                         )
                       )
@@ -136,7 +136,7 @@ class _RuteCreatorState extends State<RuteCreator> {
                 child: Column(children: <Widget>[
                   TextFormField(
                     decoration: InputDecoration(
-                      labelText: "Rute name"
+                      labelText: "Problem name"
                     ),
                     controller: _nameCtrl,
                     validator: (value) {

@@ -117,8 +117,8 @@ class _GymsPageState extends State<GymsPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text("Rutes    ${g.nrRutes}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          Text("Sectors ${g.sectors.length}",
+                          Text("Problems ${g.nrRutes}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text("Sectors  ${g.sectors.length}",
                           )
                         ],
                       ),
