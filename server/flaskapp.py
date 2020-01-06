@@ -434,7 +434,7 @@ def init_flask_app(static_folder, db_path, secret):
                       "name": gym.name,
                       "uuid": gym.uuid,
                       "admin": gym.admin,
-                      "n_rutes": db.session.query(Rute).filter_by(gym=gym.uuid).count(),
+                      "n_rutes": db.session.query(Rute).filter_by(gym=gym.uuid, status=0).count(),
                       "tags": gym.tags,
                       "sectors": gym.sectors}
              for gym in db.session.query(Gym)}
@@ -453,7 +453,7 @@ def init_flask_app(static_folder, db_path, secret):
                     "lon": gym.lon,
                     "name": gym.name,
                     "uuid": gym.uuid,
-                    "n_rutes": db.session.query(Rute).filter_by(gym=gym.uuid).count(),
+                    "n_rutes": db.session.query(Rute).filter_by(gym=gym.uuid, status=0).count(),
                     "admin": gym.admin,
                     "tags": gym.tags,
                     "sectors": gym.sectors}}
