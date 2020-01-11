@@ -23,7 +23,7 @@ class RuteCreator extends StatefulWidget {
 
 class _RuteCreatorState extends State<RuteCreator> {
 
-  static const double MAX_SIZE = 1400;
+  static const double MAX_SIZE = 3000;
 
   String _sector = "Uncategorized";
   File _image;
