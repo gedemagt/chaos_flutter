@@ -17,7 +17,7 @@ abstract class Database {
   Future<void> deleteRute(Rute rute);
   Future<Rute> saveRute(Rute rute);
   Future<Rute> getRute(String uuid);
-  Future<Rute> createRute(String name, String sector, String imageUUID, File image);
+  Future<Rute> createRute(String name, String sector, String imageUUID, File image, {var onProgress});
 
   Future<void> deleteGym(Gym gym);
   Future<Gym> saveGym(Gym gym);

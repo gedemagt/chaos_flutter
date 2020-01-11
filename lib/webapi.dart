@@ -146,7 +146,66 @@ class WebAPI {
     return Image.network("http://" + HOST + "/download/$imageUUID", headers: {"cookie": _cookie});
   }
 
-  static Future<void> uploadImage(String imageUUID, {File image}) async {
+  static Future<void> uploadImage(String imageUUID, {File image, var onUploadProgress}) async {
+
+    if(image == null) {
+      final d = await getApplicationDocumentsDirectory();
+      String newPath = join(d.path, "$imageUUID.jpg");
+      File f = new File(newPath);
+      image = f;
+      print("[WebAPI] Found image '$newPath' locally");
+    }
+    else {
+      print("[WebAPI] Using supplied file: ${image.path}");
+    }
+
+    final url = getURI("add_image/$imageUUID");
+
+    final fileStream = image.openRead();
+
+    int totalByteLength = image.lengthSync();
+
+    final httpClient = HttpClient();
+
+    final request = await httpClient.postUrl(url);
+
+    request.headers.add("content-type", "application/octet-stream");
+    request.headers.add("filename", "$imageUUID.jpg");
+
+    request.contentLength = totalByteLength;
+
+    int byteCount = 0;
+    Stream<List<int>> streamUpload = fileStream.transform(
+      new StreamTransformer.fromHandlers(
+        handleData: (data, sink) {
+          byteCount += data.length;
+
+          if (onUploadProgress != null) {
+            onUploadProgress(byteCount, totalByteLength);
+          }
+
+          sink.add(data);
+        },
+        handleError: (error, stack, sink) {
+          print(error.toString());
+        },
+        handleDone: (sink) {
+          sink.close();
+          // UPLOAD DONE;
+        },
+      ),
+    );
+
+    await request.addStream(streamUpload);
+
+    var response = await request.close();
+
+    print(response.statusCode);
+    print(response.toString());
+    print("[WebAPI] Uploaded image '$imageUUID'");
+  }
+
+  static Future<void> uploadImage2(String imageUUID, {File image}) async {
 
       if(image == null) {
         final d = await getApplicationDocumentsDirectory();
@@ -165,7 +224,6 @@ class WebAPI {
       var multipartFile = new http.MultipartFile('data', stream, await image.length(),
           filename: basename(image.path));
       req.files.add(multipartFile);
-
 
       var response = await req.send();
       handleRequest(response);

@@ -23,8 +23,10 @@ class WebDatabase extends Database {
   }
 
   @override
-  Future<Rute> createRute(String name, String sector, String imageUUID, File image) async {
-    await WebAPI.uploadImage(imageUUID, image: image);
+  Future<Rute> createRute(String name, String sector, String imageUUID, File image, {var onProgress}) async {
+    await WebAPI.uploadImage(imageUUID, image: image, onUploadProgress: (x, y) {
+      onProgress(x,y);
+    });
     String uuid = getUUID("rute");
     await WebAPI.createRute(uuid, name, imageUUID, getLoggedInUser(), sector, StateManager().gym, 0);
     await refreshRutes();

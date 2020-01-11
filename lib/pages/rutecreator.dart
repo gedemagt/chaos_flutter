@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:timer/StateManager.dart';
 import 'package:timer/providers/database.dart';
 import 'package:timer/util.dart';
@@ -92,26 +93,23 @@ class _RuteCreatorState extends State<RuteCreator> {
               if (_formKey.currentState.validate()){
                 String imageUUID = await handleImage();
                 BuildContext c;
-                showDialog(barrierDismissible: false, context: context,
-                  builder: (context) {
-                    c = context;
-                    return Center(
-                      child: Container(
-                        child:Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            CircularProgressIndicator(),
-                            Text("Uploading problem...", style: TextStyle(inherit: false),)
-                          ],
-                        )
-                      )
-                    );
-                  }
+
+                ProgressDialog pr = ProgressDialog(context, type: ProgressDialogType.Download, isDismissible: false);
+                pr.show();
+                pr.style(
+                  progress: 0,
+                  maxProgress: 100,
+                  message: "Uploading problem",
+                  messageTextStyle: TextStyle(inherit: false),
+                  progressTextStyle: TextStyle(inherit: false),
+                  progressWidget: LinearProgressIndicator()
                 );
-                widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image).then((r) {
-                  Navigator.of(c).pop();
+
+                widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image, onProgress: (x, y) {
+                  pr.update(progress: (x/y*100).floorToDouble());
+                }).then((r) {
+                  pr.dismiss();
                   Navigator.pop(context, r);
-                  //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RuteViewer([r], 0)));
                 },
                 onError: (e) {
                   Navigator.of(c).pop();
