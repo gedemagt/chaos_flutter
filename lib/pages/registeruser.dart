@@ -68,9 +68,7 @@ class _RegisterUserPageState extends State<RegisterUserPage> {
             _isRegistering = true;
           });
           StateManager().db.createUser(usernameController.text, email.text, passwordController.text).then((u) {
-            StateManager().db.login(usernameController.text, passwordController.text).then((u){
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
-            });
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => GymsPage()));
           }).catchError((statusCode) {
             setState(() {
               _isRegistering = false;

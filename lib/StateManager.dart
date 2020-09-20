@@ -4,7 +4,7 @@ import 'package:timer/models/gym.dart';
 import 'package:timer/models/rute.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/providers/database.dart';
-import 'package:timer/providers/webdatabase.dart';
+import 'package:timer/providers/firebasedatabase.dart';
 
 class StateManager {
   static final StateManager _singleton = new StateManager._internal();
@@ -13,7 +13,7 @@ class StateManager {
     return _singleton;
   }
 
-  final Database db = WebDatabase();
+  final Database db = FirebaseDatabase();
 
   StateManager._internal();
 
@@ -33,6 +33,9 @@ class StateManager {
   }
 
   Future<void> init() async {
+
+
+
     print("[StateManager] Initializing StateManger()");
     await db.init();
     SharedPreferences sp = await SharedPreferences.getInstance();

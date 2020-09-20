@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "59924271302",
+    "firebase_url": "https://chaos-comp.firebaseio.com",
+    "project_id": "chaos-comp",
+    "storage_bucket": "chaos-comp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59924271302:android:80a63b771dbe0dc2",
+        "android_client_info": {
+          "package_name": "com.jhalkjar.timer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "59924271302-ogic8j50h77g9v9thalknegtprn2k822.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtThTJL3iqX7JyHW02RPeB3FMwky-oRTM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59924271302-ogic8j50h77g9v9thalknegtprn2k822.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
