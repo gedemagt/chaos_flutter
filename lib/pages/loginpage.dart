@@ -92,39 +92,19 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
-    Widget register = Material(
-      elevation: 5.0,
-      borderRadius: BorderRadius.circular(30.0),
-      color: Color(0xff01A0C7),
-      child: MaterialButton(
-        minWidth: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+    Widget register = FlatButton(
         onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterUserPage()));
         },
-        child: Text("Register new user",
-            textAlign: TextAlign.center,
-            style: style.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
+        child: Text("Register new user", textAlign: TextAlign.center)
     );
 
-    Widget resetPassword = Material(
-      elevation: 5.0,
-      borderRadius: BorderRadius.circular(30.0),
-      color: Color(0xff01A0C7),
-      child: MaterialButton(
-        minWidth: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+    Widget resetPassword = FlatButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordPage()));
         },
-        child: Text("Reset Password",
-            textAlign: TextAlign.center,
-            style: style.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
-    );
+        child: Text("Forgot password?", textAlign: TextAlign.center)
+      );
 
     if(_isLoggingIn) {
       loginButon = Center(
@@ -145,10 +125,14 @@ class _LoginPageState extends State<LoginPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(height: 45.0),
+                SizedBox(height: 75.0),
                 emailField,
                 SizedBox(height: 25.0),
                 passwordField,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [resetPassword]
+                ),
                 SizedBox(
                   height: 35.0,
                 ),
@@ -157,13 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                   height: 25.0,
                 ),
                 register,
-                SizedBox(
-                  height: 45.0,
-                ),
-                resetPassword,
-                SizedBox(
-                  height: 45.0,
-                ),
+
               ],
             ),
           ),
