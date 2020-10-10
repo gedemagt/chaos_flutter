@@ -1,15 +1,15 @@
 from datetime import datetime
-from flask_login import UserMixin, login_user, login_required, logout_user
 from competition import competition
 from random import randint
 from flask import Flask, request, jsonify, send_from_directory, abort
 from db import db
-from flask_login import LoginManager
+from flask_user import current_user, login_required, roles_required, UserManager, UserMixin, EmailManager
 from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
 import os
 
+
 class Gym(db.Model):
+    __tablename__ = 'gyms'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     uuid = db.Column(db.String, unique=True)
@@ -23,27 +23,49 @@ class Gym(db.Model):
     status = db.Column(db.Integer, default=0)
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True)
-    uuid = db.Column(db.String, unique=True)
-    password = db.Column(db.String)
-    email = db.Column(db.String)
-    role = db.Column(db.String)
-    gym = db.Column(db.Integer, db.ForeignKey('gym.id'))
+    username = db.Column(db.String, unique=True)
+    active = db.Column('is_active', db.Boolean(), nullable=False, server_default='1')
+
+    email = db.Column(db.String(255, collation='NOCASE'), nullable=False, unique=True)
+    email_confirmed_at = db.Column(db.DateTime())
+
+    password = db.Column(db.String(255), nullable=False, server_default='')
+
+    roles = db.relationship('Role', secondary='user_roles')
+
+    gym = db.Column(db.Integer, db.ForeignKey('gyms.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow)
     edit = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.Integer, default=0)
 
 
+# Define the Role data-model
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+
+
+# Define the UserRoles association table
+class UserRoles(db.Model):
+    __tablename__ = 'user_roles'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'))
+    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id', ondelete='CASCADE'))
+
+
 class Rute(db.Model):
+    __tablename__ = 'rutes'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     uuid = db.Column(db.String, unique=True)
     image = db.Column(db.String)
     coordinates = db.Column(db.String, default="{}")
-    author = db.Column(db.Integer, db.ForeignKey('user.id'))
-    gym = db.Column(db.Integer, db.ForeignKey('gym.id'))
+    author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    gym = db.Column(db.Integer, db.ForeignKey('gyms.id'))
     sector = db.Column(db.String)
     tag = db.Column(db.String)
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -53,6 +75,7 @@ class Rute(db.Model):
 
 
 class Image(db.Model):
+    __tablename__ = 'images'
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String, unique=True)
     url = db.Column(db.String, unique=True)
@@ -60,79 +83,118 @@ class Image(db.Model):
 
 
 class Comment(db.Model):
+    __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String)
     uuid = db.Column(db.String, unique=True)
-    author = db.Column(db.Integer, db.ForeignKey('user.id'))
-    rute = db.Column(db.Integer, db.ForeignKey('rute.id'))
+    author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    rute = db.Column(db.Integer, db.ForeignKey('rutes.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Complete(db.Model):
+    __tablename__ = 'completes'
     id = db.Column(db.Integer, primary_key=True)
     tries = db.Column(db.Integer)
-    user = db.Column(db.Integer, db.ForeignKey('user.id'))
-    rute = db.Column(db.Integer, db.ForeignKey('rute.id'))
+    user = db.Column(db.Integer, db.ForeignKey('users.id'))
+    rute = db.Column(db.Integer, db.ForeignKey('rutes.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Rating(db.Model):
+    __tablename__ = 'ratings'
     id = db.Column(db.Integer, primary_key=True)
     rating = db.Column(db.String)
     uuid = db.Column(db.String, unique=True)
-    author = db.Column(db.Integer, db.ForeignKey('user.id'))
-    rute = db.Column(db.Integer, db.ForeignKey('rute.id'))
+    author = db.Column(db.Integer, db.ForeignKey('users.id'))
+    rute = db.Column(db.Integer, db.ForeignKey('rutes.id'))
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-class UserClass(UserMixin):
-
-    def __init__(self, uuid):
-        self.uuid = uuid
-
-    def get_id(self):
-        return self.uuid
-
 def init_flask_app(static_folder, db_path, secret):
     app = Flask(__name__, static_folder=static_folder)
-    login_manager = LoginManager()
-    migrate = Migrate(app, db)
-    bcrypt = Bcrypt(app)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + db_path
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.secret_key = secret
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
+    app.config['MAIL_SERVER'] = 'smtp-relay.sendinblue.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USERNAME'] = 'gedemagt@gmail.com'
+    app.config['MAIL_PASSWORD'] = os.getenv("SMTP_PASS")
+    app.config['MAIL_DEFAULT_SENDER'] = '"ChaosCompanion" <noreply@chaos.com>'
+
+    app.config['USER_APP_NAME'] = 'Chaos Companion'
+    app.config['USER_ENABLE_EMAIL'] = True
+    app.config['USER_ENABLE_USERNAME'] = True
+    app.config['USER_EMAIL_SENDER_NAME'] = 'Chaos Companion'
+    app.config['USER_EMAIL_SENDER_EMAIL'] = 'noreply@chaos.com'
+
+    user_manager = UserManager(app, db, User)
+    email_manager = EmailManager(app)
+    migrate = Migrate(app, db)
     db.init_app(app)
     db.app = app
-    login_manager.init_app(app)
 
     if not os.path.exists(db_path):
 
         print("Creates database")
         db.create_all()
 
-        pw =bcrypt.generate_password_hash("p").decode("utf-8")
+        db.session.add(Role(name='USER'))
 
-        db.session.add(User(uuid="admin", name="admin", password=pw, email="", gym="UnknowGym", role="ADMIN"))
+        user = User(
+            username="admin",
+            password=user_manager.hash_password('changeme'),
+            email='gedemagt+chaostest@gmail.com',
+            email_confirmed_at=datetime.utcnow(),
+            gym="UnknowGym"
+        )
+        user.roles.append(Role(name='ADMIN'))
+        db.session.add(user)
         db.session.commit()
 
+        # The Home page is accessible to anyone
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        user = db.session.query(User).filter_by(name=user_id).first()
-        if user is None:
-            return None
-        return UserClass(user_id)
+    @app.route('/user/current_info', methods=['GET'])
+    @login_required
+    def user_info():
+        return jsonify({"gym": current_user.gym,
+                       "date": str(current_user.date),
+                       "edit": str(current_user.edit),
+                       "status": current_user.status,
+                       "name": current_user.username,
+                       "roles": [x.name for x in current_user.roles],
+                       "email": current_user.email})
 
     @app.route('/', methods=['GET'])
     def index():
         with open("privacy.html") as f:
             return f.read()
-        return "JOHN"
 
     @app.route('/privacy', methods=['GET', 'POST'])
     def privacy():
         return app.send_static_file("privacy.html")
+
+    @app.route('/login', methods=['POST'])
+    def reset_password():
+        email = request.values["email"]
+        u = db.session.query(User).filter_by(email=email).first()
+        if u:
+            email_manager.send_reset_password_email(u, None)
+            return "Success"
+        return "No user wit email", 400
+
+    @app.route('/reset_passsword', methods=['POST'])
+    def reset_password():
+        email = request.values["email"]
+        u = db.session.query(User).filter_by(email=email).first()
+        if u:
+            email_manager.send_reset_password_email(u, None)
+            return "Success"
+        return "No user wit email", 400
 
     @app.route('/add_rute', methods=['POST'])
     @login_required
@@ -159,43 +221,17 @@ def init_flask_app(static_folder, db_path, secret):
 
         return str(db.session.query(Rute).order_by(Rute.id.desc()).first().id)
 
-
     @app.route('/add_image/<string:uuid>', methods=['POST'])
     @login_required
     def upload_image(uuid):
         f = request.files['data']
         filename = os.path.join(app.static_folder, "{}.jpg".format(uuid))
-        if os._exists(filename):
+        if os.path.exists(filename):
             abort(400)
         f.save(filename)
         db.session.add(Image(uuid=uuid, url=filename))
         db.session.commit()
         return "Succes"
-
-
-    @app.route('/login', methods=['POST'])
-    def login():
-        username = request.json['username']
-        password = request.json['password']#.decode('utf-8')
-
-        user = db.session.query(User).filter_by(name=username).first()
-
-        if user is None:
-            abort(400)
-
-        if not bcrypt.check_password_hash(user.password, password):
-            abort(400)
-
-        login_user(UserClass(username))
-
-        return user.uuid
-
-
-    @app.route('/logout', methods=['GET'])
-    def logout():
-        logout_user()
-        return "Succes"
-
 
     @app.route("/complete", methods=['POST'])
     @login_required
@@ -204,26 +240,24 @@ def init_flask_app(static_folder, db_path, secret):
             rute = request.json["rute"]
             user = request.json["user"]
             tries = request.json["tries"]
+
+            u = db.session.query(User).filter_by(uuid=user).first().id
+            r = db.session.query(Rute).filter_by(uuid=rute).first().id
+            complete = db.session.query(Complete).filter_by(user=u, rute=r).first()
+
+            if complete is None:
+                db.session.add(Complete(tries=tries,
+                                        user=db.session.query(User).filter_by(uuid=user).first().id,
+                                        rute=db.session.query(Rute).filter_by(uuid=rute).first().id
+                                        ))
+            else:
+                complete.tries = tries
+
+            db.session.commit()
+            return "Succes"
+
         except KeyError:
             abort(400)
-
-
-        u = db.session.query(User).filter_by(uuid=user).first().id
-        r = db.session.query(Rute).filter_by(uuid=rute).first().id
-        complete = db.session.query(Complete).filter_by(user=u, rute=r).first()
-
-        if complete is None:
-            db.session.add(Complete(tries=tries,
-                                    user = db.session.query(User).filter_by(uuid=user).first().id,
-                                    rute = db.session.query(Rute).filter_by(uuid=rute).first().id
-                                    ))
-        else:
-            complete.tries = tries
-
-
-        db.session.commit()
-        return "Succes"
-
 
     @app.route('/save_rute', methods=['POST'])
     @login_required
@@ -252,28 +286,6 @@ def init_flask_app(static_folder, db_path, secret):
         db.session.commit()
         return "Succes"
 
-
-    @app.route('/add_user', methods=['POST'])
-    def add_user():
-        username = request.json['username']
-        password = request.json['password']
-        password = bcrypt.generate_password_hash(password).decode('utf-8')
-        email= request.json['email']
-
-        uuid = request.json['uuid']
-        role = request.json.get('role', 'USER')
-
-        if role not in ["USER", "ADMIN"]:
-            abort(400)
-
-        if db.session.query(User).filter_by(name=username).first():
-            abort(400)
-
-        db.session.add(User(uuid=uuid, name=username, password=password, email=email, role=role))
-        db.session.commit()
-        return "Succes"
-
-
     @app.route('/add_gym', methods=['POST'])
     @login_required
     def add_gym():
@@ -289,7 +301,6 @@ def init_flask_app(static_folder, db_path, secret):
         db.session.add(Gym(uuid=uuid, name=name, admin=admin, sectors=sectors, tags=tags))
         db.session.commit()
         return "Succes"
-
 
     @app.route('/save_gym', methods=['POST'])
     @login_required
@@ -313,7 +324,6 @@ def init_flask_app(static_folder, db_path, secret):
         db.session.commit()
         return "Succes"
 
-
     @app.route('/check_username/<string:name>', methods=['POST'])
     def check_name(name):
 
@@ -323,11 +333,9 @@ def init_flask_app(static_folder, db_path, secret):
         else:
             abort(400)
 
-
-    @app.route('/get_rutes', methods=['GET','POST'])
+    @app.route('/get_rutes', methods=['GET', 'POST'])
     @login_required
     def get_rutes():
-
 
         query = db.session.query(Rute)
 
@@ -339,7 +347,6 @@ def init_flask_app(static_folder, db_path, secret):
         if "gym" in request.headers:
             query = query.filter(Rute.gym == request.headers["gym"])
 
-
         r = {str(rute.id): {"author": rute.author,
                             "grade": rute.grade,
                             "date": str(rute.date),
@@ -347,7 +354,6 @@ def init_flask_app(static_folder, db_path, secret):
                             "coordinates": rute.coordinates,
                             "gym": rute.gym,
                             "sector": rute.sector,
-                            "tag": rute.sector,
                             "name": rute.name,
                             "image": rute.image,
                             "uuid": rute.uuid,
@@ -363,7 +369,6 @@ def init_flask_app(static_folder, db_path, secret):
         r.update({"last_sync": str(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))})
         return jsonify(r), 200
 
-
     @app.route('/download/<string:uuid>', methods=['GET', 'POST'])
     @login_required
     def download_image(uuid):
@@ -376,8 +381,7 @@ def init_flask_app(static_folder, db_path, secret):
             abort(400)
         return send_from_directory(app.static_folder, os.path.relpath(expected_path, app.static_folder))
 
-
-    @app.route('/delete/<string:uuid>', methods=['GET','POST'])
+    @app.route('/delete/<string:uuid>', methods=['GET', 'POST'])
     @login_required
     def delete_image(uuid):
         rute = db.session.query(Rute).filter_by(uuid=uuid).first()
@@ -385,9 +389,7 @@ def init_flask_app(static_folder, db_path, secret):
             rute.status = 1
             rute.edit = datetime.utcnow()
         db.session.commit()
-
         return "Succes", 200
-
 
     @app.route('/delete_gym/<string:uuid>', methods=['POST'])
     @login_required
@@ -397,14 +399,12 @@ def init_flask_app(static_folder, db_path, secret):
             gym.status = 1
             gym.edit = datetime.utcnow()
         db.session.commit()
-
         return "Succes", 200
 
-
-    @app.route('/delete_user/<string:uuid>', methods=['POST'])
+    @app.route('/delete_user/<string:username>', methods=['POST'])
     @login_required
-    def delete_user(uuid):
-        user = db.session.query(User).filter_by(uuid=uuid).first()
+    def delete_user(username):
+        user = db.session.query(User).filter_by(username=username).first()
         if user is not None:
             user.status = 1
             user.edit = datetime.utcnow()
@@ -422,7 +422,6 @@ def init_flask_app(static_folder, db_path, secret):
         else:
             abort(400)
 
-
     @app.route('/get_gyms', methods=['GET'])
     @login_required
     def get_gyms():
@@ -439,7 +438,6 @@ def init_flask_app(static_folder, db_path, secret):
                       "sectors": gym.sectors}
              for gym in db.session.query(Gym)}
         return jsonify(r), 200
-
 
     @app.route('/get_gym/<string:uuid>', methods=['GET'])
     @login_required
@@ -459,38 +457,31 @@ def init_flask_app(static_folder, db_path, secret):
                     "sectors": gym.sectors}}
         return jsonify(r), 200
 
-
     @app.route('/get_users', methods=['GET'])
     @login_required
     def get_users():
         r = {user.id: {"gym": user.gym,
                        "date": str(user.date),
-                       "name": user.name,
+                       "name": user.username,
                        "email": user.email,
-                       #"password":   user.password,
-                       "role": user.role,
-                       "uuid": user.uuid}
+                       "role": user.role}
              for user in db.session.query(User)}
 
         return jsonify(r), 200
 
-
-    @app.route('/get_user/<string:uuid>', methods=['GET'])
+    @app.route('/get_user/<string:username>', methods=['GET'])
     @login_required
-    def get_user(uuid):
+    def get_user(username):
 
-        user = db.session.query(User).filter_by(uuid=uuid).first()
+        user = db.session.query(User).filter_by(username=username).first()
 
         r = {user.id: {"gym": user.gym,
                        "date": str(user.date),
-                       "name": user.name,
-                       #"password": user.password,
-                       "uuid": user.uuid,
+                       "name": user.username,
                        "role": user.role,
                        "email": user.email}}
 
         return jsonify(r), 200
-
 
     @app.route('/get_comp/<int:pin>', methods=['GET'])
     def get_comp(pin):
@@ -513,7 +504,6 @@ def init_flask_app(static_folder, db_path, secret):
 
         return jsonify(r), 200
 
-
     @app.route('/get_participated_comps/<string:user>', methods=['GET'])
     def get_participated_comps(user):
         comp = db.session.query(competition.CompetitionParticipation).filter_by(user=user)
@@ -521,7 +511,6 @@ def init_flask_app(static_folder, db_path, secret):
         comps = list(set([c.comp for c in comp]))
 
         return jsonify(comps), 200
-
 
     @app.route('/get_comps', methods=['GET'])
     def get_comps():
@@ -539,7 +528,6 @@ def init_flask_app(static_folder, db_path, secret):
               } for comp in db.session.query(competition.Competition)]
         #print(r)
         return jsonify(r), 200
-
 
     @app.route('/get_part', methods=['POST'])
     def get_participation():
@@ -566,13 +554,11 @@ def init_flask_app(static_folder, db_path, secret):
 
         return jsonify(r), 200
 
-
     def parse_or_now(key, container):
         if key in container:
             return datetime.strptime(container[key],'%Y-%m-%d %H:%M:%S')
         else:
             return datetime.utcnow()
-
 
     @app.route('/update_part', methods=['POST'])
     def update_participation():
@@ -596,7 +582,6 @@ def init_flask_app(static_folder, db_path, secret):
 
         return "Success", 200
 
-
     @app.route('/add_rute_comp', methods=['POST'])
     def add_rute():
         comp = request.json['comp']
@@ -607,7 +592,6 @@ def init_flask_app(static_folder, db_path, secret):
         db.session.commit()
 
         return "Success", 200
-
 
     @app.route('/update_comp', methods=['POST'])
     def update_comp():
@@ -638,7 +622,6 @@ def init_flask_app(static_folder, db_path, secret):
             db.session.commit()
 
         return "{}".format(pin), 200
-
 
     @app.route('/get_stats/<int:pin>', methods=['GET'])
     def get_stats(pin):

@@ -1,7 +1,3 @@
-
-
-
-
 from flaskapp import init_flask_app
 
 
@@ -20,7 +16,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-
     db_path = args.db
 
     if not os.path.exists(args.static):
@@ -29,6 +24,6 @@ if __name__ == "__main__":
     print(args.static)
     print(args.db)
 
-    app =  init_flask_app(args.static, db_path, args.secret)
+    app = init_flask_app(args.static, db_path, args.secret)
 
     app.run(debug=True, host="0.0.0.0", port=args.port)
