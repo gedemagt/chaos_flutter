@@ -12,5 +12,6 @@ class ServerException implements Exception {
 
 class InvalidContentException implements Exception {
   String cause;
-  InvalidContentException(this.cause);
+  int statusCode;
+  InvalidContentException(this.cause, {this.statusCode});
 }

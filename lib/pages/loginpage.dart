@@ -6,6 +6,7 @@ import 'package:timer/models/gym.dart';
 import 'package:timer/pages/gymspage.dart';
 import 'package:timer/pages/homepage.dart';
 import 'package:timer/pages/registeruser.dart';
+import 'package:timer/pages/resetpassword.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -108,6 +109,23 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
+    Widget resetPassword = Material(
+      elevation: 5.0,
+      borderRadius: BorderRadius.circular(30.0),
+      color: Color(0xff01A0C7),
+      child: MaterialButton(
+        minWidth: MediaQuery.of(context).size.width,
+        padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordPage()));
+        },
+        child: Text("Reset Password",
+            textAlign: TextAlign.center,
+            style: style.copyWith(
+                color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+    );
+
     if(_isLoggingIn) {
       loginButon = Center(
         child: CircularProgressIndicator()
@@ -139,6 +157,10 @@ class _LoginPageState extends State<LoginPage> {
                   height: 25.0,
                 ),
                 register,
+                SizedBox(
+                  height: 45.0,
+                ),
+                resetPassword,
                 SizedBox(
                   height: 45.0,
                 ),

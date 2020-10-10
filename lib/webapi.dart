@@ -20,8 +20,8 @@ import 'package:timer/pages/exceptions.dart';
 
 class WebAPI {
 
-  static const String HOST = "chaos.jeshj.duckdns.org";
-  //static const String HOST = "10.0.2.2:5000";
+//  static const String HOST = "chaos.jeshj.duckdns.org";
+  static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
 
@@ -29,7 +29,7 @@ class WebAPI {
     return _cookie != null && _cookie != "";
   }
 
-  static void handleRequest(BaseResponse r) {
+  static void handleRequest(Response r) {
     Exception e;
     if(r.statusCode >= 500)
       e = ServerException("Server error: ${r.statusCode}");
@@ -38,7 +38,7 @@ class WebAPI {
     else if(r.statusCode == 413 )
       e = InvalidContentException("Content to large: ${r.statusCode}");
     else if(r.statusCode >= 400)
-      e = InvalidContentException("Bad request: ${r.statusCode}");
+      e = InvalidContentException(r.body, statusCode: r.statusCode);
 
     if(e != null) {
       print("Throwing exception from request '${r.request.url}' based on status code ${r.statusCode}");
@@ -65,7 +65,6 @@ class WebAPI {
 
 
   static Future<User> login(String username, String password) async {
-    User result;
     Response r = await _postJson("login",
         body: {"username": username, "password": password}
     );
@@ -81,13 +80,17 @@ class WebAPI {
       print("[WebAPI] New session cookie: $cookie");
     }
 
-    result = await getUser(r.body);
+    Response r2 = await _get("user/current_info");
+
+    Map m = json.decode(r2.body);
+    print(m);
+    User u = User.fromJson(m);
 
     SharedPreferences.getInstance().then((sp) {
       sp.setString("cookie", _cookie);
     });
 
-    return result;
+    return u;
   }
   
   static Future<void> complete(User u, Rute rute, int tries) async {
@@ -107,7 +110,6 @@ class WebAPI {
     User u = User.fromJson(m.values.first);
     print("[WebAPI] Downloaded user $u");
     return u;
-
   }
 
   static Future <List<User>> downloadUsers(Gym gym) async {
@@ -225,8 +227,8 @@ class WebAPI {
           filename: basename(image.path));
       req.files.add(multipartFile);
 
-      var response = await req.send();
-      handleRequest(response);
+//      var response = ;
+      handleRequest(await Response.fromStream(await req.send()));
       print("[WebAPI] Uploaded image '$imageUUID'");
   }
 
@@ -327,7 +329,7 @@ class WebAPI {
 
   static Future<void> logout() async {
     _cookie = "";
-    await _get("logout");
+    await _get("user/sign-out");
     print("[WebAPI] Logging out");
   }
 
@@ -402,7 +404,15 @@ class WebAPI {
 //      last.addAll(split(dest));
 //      dest = joinAll(last);
 //    }
-    return Uri.https(HOST, dest);
+    return Uri.http(HOST, dest);
+  }
+
+  static Future<Response> resetPassword(email) async {
+    return await _postJson("reset_password",
+        body: {
+          "email": email
+        }
+    );
   }
 
 }

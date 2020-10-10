@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from flask_login import login_user
@@ -6,7 +7,7 @@ from competition import competition
 from random import randint
 from flask import Flask, request, jsonify, send_from_directory, abort
 from db import db
-from flask_user import current_user, login_required, roles_required, UserManager, UserMixin, EmailManager
+from flask_user import current_user, login_required, UserManager, UserMixin, EmailManager
 from flask_migrate import Migrate
 import os
 
@@ -29,6 +30,9 @@ class Gym(db.Model):
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+
+    uuid = db.Column(db.String, unique=True, nullable=False)
+
     username = db.Column(db.String, unique=True)
     active = db.Column('is_active', db.Boolean(), nullable=False, server_default='1')
 
@@ -44,6 +48,15 @@ class User(db.Model, UserMixin):
     edit = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.Integer, default=0)
 
+    def to_json(self):
+        return {"gym": self.gym,
+                "date": str(self.date),
+                "edit": str(self.edit),
+                "status": self.status,
+                "name": self.username,
+                "role": next(x.name for x in self.roles),
+                "email": self.email,
+                "uuid": self.uuid}
 
 # Define the Role data-model
 class Role(db.Model):
@@ -164,13 +177,26 @@ def init_flask_app(static_folder, db_path, secret):
     @app.route('/user/current_info', methods=['GET'])
     @login_required
     def user_info():
-        return jsonify({"gym": current_user.gym,
-                       "date": str(current_user.date),
-                       "edit": str(current_user.edit),
-                       "status": current_user.status,
-                       "name": current_user.username,
-                       "role": next(x.name for x in current_user.roles),
-                       "email": current_user.email})
+        return jsonify(current_user.to_json())
+
+    @app.route('/add_user', methods=['POST'])
+    def add_user():
+        username = request.json['username']
+        password = request.json['password']
+        email = request.json['email']
+
+        user = User(
+            username=username,
+            password=user_manager.hash_password(password),
+            email=email,
+            email_confirmed_at=datetime.utcnow(),
+            uuid=str(uuid.uuid4())
+        )
+        user.roles.append(db.session.query(Role).filter_by(name='USER').first())
+        db.session.add(user)
+        db.session.commit()
+
+        return "Succes"
 
     @app.route('/', methods=['GET'])
     def index():
@@ -201,14 +227,14 @@ def init_flask_app(static_folder, db_path, secret):
 
         return "Success"
 
-    @app.route('/reset_passsword', methods=['POST'])
+    @app.route('/reset_password', methods=['POST'])
     def reset_password():
-        email = request.values["email"]
+        email = request.json["email"]
         u = db.session.query(User).filter_by(email=email).first()
         if u:
             email_manager.send_reset_password_email(u, None)
             return "Success"
-        return "No user wit email", 400
+        return "No user with that email", 400
 
     @app.route('/add_rute', methods=['POST'])
     @login_required
@@ -474,26 +500,17 @@ def init_flask_app(static_folder, db_path, secret):
     @app.route('/get_users', methods=['GET'])
     @login_required
     def get_users():
-        r = {user.id: {"gym": user.gym,
-                       "date": str(user.date),
-                       "name": user.username,
-                       "email": user.email,
-                       "role": user.role}
-             for user in db.session.query(User)}
+        r = {u.id: u.to_json() for u in db.session.query(User)}
 
         return jsonify(r), 200
 
-    @app.route('/get_user/<string:username>', methods=['GET'])
+    @app.route('/get_user/<string:uuid>', methods=['GET'])
     @login_required
-    def get_user(username):
+    def get_user(uuid):
 
-        user = db.session.query(User).filter_by(username=username).first()
+        u = db.session.query(User).filter_by(uuid=uuid).first()
 
-        r = {user.id: {"gym": user.gym,
-                       "date": str(user.date),
-                       "name": user.username,
-                       "role": user.role,
-                       "email": user.email}}
+        r = {u.id: u.to_json()}
 
         return jsonify(r), 200
 

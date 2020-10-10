@@ -7,7 +7,7 @@ import 'package:timer/pages/gymspage.dart';
 
 Future main() async {
 
-
+  WidgetsFlutterBinding.ensureInitialized();
   await StateManager().init();
 
   Widget _default;
