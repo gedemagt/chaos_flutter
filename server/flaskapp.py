@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from flask_login import login_user
+
 from competition import competition
 from random import randint
 from flask import Flask, request, jsonify, send_from_directory, abort
@@ -166,7 +169,7 @@ def init_flask_app(static_folder, db_path, secret):
                        "edit": str(current_user.edit),
                        "status": current_user.status,
                        "name": current_user.username,
-                       "roles": [x.name for x in current_user.roles],
+                       "role": next(x.name for x in current_user.roles),
                        "email": current_user.email})
 
     @app.route('/', methods=['GET'])
@@ -179,13 +182,24 @@ def init_flask_app(static_folder, db_path, secret):
         return app.send_static_file("privacy.html")
 
     @app.route('/login', methods=['POST'])
-    def reset_password():
-        email = request.values["email"]
-        u = db.session.query(User).filter_by(email=email).first()
-        if u:
-            email_manager.send_reset_password_email(u, None)
-            return "Success"
-        return "No user wit email", 400
+    def login():
+        username = request.json['username'].strip()
+        password = request.json['password'].strip()
+
+        u = db.session.query(User).filter_by(username=username).first()
+
+        if u is None:
+            u = db.session.query(User).filter_by(email=username).first()
+
+        if u is None:
+            abort(400)
+
+        if not user_manager.password_manager.verify_password(password, u.password):
+            abort(400)
+
+        login_user(u)
+
+        return "Success"
 
     @app.route('/reset_passsword', methods=['POST'])
     def reset_password():
