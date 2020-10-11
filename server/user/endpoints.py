@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import jsonify, request, Flask, abort
 from flask_login import current_user, login_user
 from flask_user import login_required, UserManager, EmailManager
+from sqlalchemy.exc import IntegrityError
 
 from db import db
 from user.models import User, Role
@@ -36,22 +37,23 @@ def init_user_endpoints(app: Flask):
 
     @app.route('/add_user', methods=['POST'])
     def add_user():
-        username = request.json['username']
-        password = request.json['password']
-        email = request.json['email']
-
-        u = User(
-            username=username,
-            password=user_manager.hash_password(password),
-            email=email,
-            email_confirmed_at=datetime.utcnow(),
-            uuid=str(uuid.uuid4())
-        )
-        u.roles.append(db.session.query(Role).filter_by(name='USER').first())
-        db.session.add(u)
-        db.session.commit()
-
-        return "Succes"
+        username = request.json['username'].strip()
+        password = request.json['password'].strip()
+        email = request.json['email'].strip()
+        try:
+            u = User(
+                username=username,
+                password=user_manager.hash_password(password),
+                email=email,
+                email_confirmed_at=datetime.utcnow(),
+                uuid=str(uuid.uuid4())
+            )
+            u.roles.append(db.session.query(Role).filter_by(name='USER').first())
+            db.session.add(u)
+            db.session.commit()
+            return "OK"
+        except IntegrityError:
+            abort(400)
 
     @app.route('/login', methods=['POST'])
     def login():
@@ -79,7 +81,7 @@ def init_user_endpoints(app: Flask):
         u = db.session.query(User).filter_by(email=email).first()
         if u:
             email_manager.send_reset_password_email(u, None)
-            return "Success"
+            return "OK"
         return "No user with that email", 400
 
     @app.route('/get_user/<string:uuid>', methods=['GET'])
@@ -108,14 +110,14 @@ def init_user_endpoints(app: Flask):
             user.edit = datetime.utcnow()
         db.session.commit()
 
-        return "Succes", 200
+        return "OK", 200
 
     @app.route('/check_username/<string:name>', methods=['POST'])
     def check_name(name):
 
         user = db.session.query(User).filter_by(name=name).first()
         if user is None:
-            return "Success"
+            return "OK"
         else:
             abort(400)
 

@@ -20,8 +20,8 @@ import 'package:timer/pages/exceptions.dart';
 
 class WebAPI {
 
-//  static const String HOST = "chaos.jeshj.duckdns.org";
-  static const String HOST = "10.0.2.2:5000";
+  static const String HOST = "chaos.jeshj.duckdns.org";
+//  static const String HOST = "10.0.2.2:5000";
 
   static String _cookie = "";
 
@@ -404,7 +404,7 @@ class WebAPI {
 //      last.addAll(split(dest));
 //      dest = joinAll(last);
 //    }
-    return Uri.http(HOST, dest);
+    return Uri.https(HOST, dest);
   }
 
   static Future<Response> resetPassword(email) async {
