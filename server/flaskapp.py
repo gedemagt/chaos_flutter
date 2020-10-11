@@ -37,7 +37,7 @@ def init_flask_app(static_folder, db_path, secret):
         user = User(
             uuid=str(uuid.uuid4()),
             username="admin",
-            password=user_manager.hash_password('changeme'),
+            password=user_manager.hash_password(os.getenv('ADMIN_PASS', 'changeme')),
             email='gedemagt+chaostest@gmail.com',
             email_confirmed_at=datetime.utcnow(),
             gym="UnknowGym"
