@@ -118,33 +118,42 @@ class _LoginPageState extends State<LoginPage> {
       resizeToAvoidBottomInset: false,
       body: Center(
         child: Container(
-          child: Padding(
-            padding: const EdgeInsets.all(36.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(height: 75.0),
-                emailField,
-                SizedBox(height: 25.0),
-                passwordField,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [resetPassword]
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 36, 0, 0),
+                child: FittedBox(
+                  child: Image.asset('assets/banner.png'),
+                  fit: BoxFit.fill,
                 ),
-                SizedBox(
-                  height: 35.0,
-                ),
-                loginButon,
-                SizedBox(
-                  height: 25.0,
-                ),
-                register,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(36.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    emailField,
+                    SizedBox(height: 20.0),
+                    passwordField,
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [resetPassword]
+                    ),
+                    SizedBox(height: 40.0),
+                    loginButon,
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    register,
 
-              ],
-            ),
-          ),
+                  ],
+                ),
+              ),
+            ],
+          )
         ),
       ),
     );
