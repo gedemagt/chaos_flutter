@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from flask_user import UserMixin
@@ -9,7 +10,7 @@ class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
 
-    uuid = db.Column(db.String, unique=True, nullable=False)
+    uuid = db.Column(db.String, unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
 
     username = db.Column(db.String, unique=True)
     active = db.Column('is_active', db.Boolean(), nullable=False, server_default='1')
