@@ -1,3 +1,5 @@
+import uuid
+
 from admin import init_admin_panel
 from flask import Flask
 
@@ -33,6 +35,7 @@ def init_flask_app(static_folder, db_path, secret):
         db.session.add(Role(name='USER'))
 
         user = User(
+            uuid=str(uuid.uuid4()),
             username="admin",
             password=user_manager.hash_password('changeme'),
             email='gedemagt+chaostest@gmail.com',

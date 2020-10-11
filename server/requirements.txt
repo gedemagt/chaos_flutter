@@ -3,5 +3,6 @@ Flask-SQLAlchemy >= 2.3.2
 flask-bcrypt >= 0.6.2
 Flask-Migrate >= 2.4.0
 Flask-User >= 1.0
+Flask-Admin
 email_validator
 gunicorn
