@@ -120,12 +120,8 @@ class _LoginPageState extends State<LoginPage> {
         child: Container(
           child: Column(
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 36, 0, 0),
-                child: FittedBox(
-                  child: Image.asset('assets/banner.png'),
-                  fit: BoxFit.fill,
-                ),
+              SafeArea(
+                child: Image.asset('assets/banner.png')
               ),
               Padding(
                 padding: const EdgeInsets.all(36.0),
