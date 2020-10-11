@@ -273,7 +273,7 @@ class WebAPI {
 
   static Future<void> createRute(String uuid, String name, String imageUUID, User author, String sector, Gym g, int grade) async {
     DateTime now = DateTime.now();
-    await _postJson("add_rute",
+    await _postJson("rute",
       body: {
         "uuid": uuid,
         "name": name,
