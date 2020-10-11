@@ -34,7 +34,7 @@ dependencies:
   sliding_up_panel: ^0.3.0
   simple_logger: ^1.4.1
   dio: 3.0.2
-  progress_dialog: ^1.2.0
+  progress_dialog: ^1.2.4
   flutter_launcher_icons: ^0.7.3
 
 dev_dependencies:

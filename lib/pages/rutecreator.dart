@@ -108,7 +108,7 @@ class _RuteCreatorState extends State<RuteCreator> {
                 widget._prov.createRute(_nameCtrl.text, _sector, imageUUID, _image, onProgress: (x, y) {
                   pr.update(progress: (x/y*100).floorToDouble());
                 }).then((r) {
-                  pr.dismiss();
+                  pr.hide();
                   Navigator.pop(context, r);
                 },
                 onError: (e) {
